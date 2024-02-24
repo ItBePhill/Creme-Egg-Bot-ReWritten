@@ -105,7 +105,7 @@ ytdl_format_options = {
     'writethumbnail': True,
     'embedthumbnail': True,
     'concurrent-fragments': 2,
-    'paths': {'home': "Songs", 'thumbnail': 'Images\Videos'}
+    'paths': {'home': "Songs", 'thumbnail': 'Images/Videos'}
 }
 ytdl_format_options_no_down = {
     'format': 'bestaudio/best',
@@ -213,7 +213,7 @@ class Player():
             await asyncio.sleep(1.0)
         if queue[0]["userfile"]:
             os.remove(queue[0]["filename"])
-            if queue[0]["coverart"] != "Songs\Images\generic-thumb.png":
+            if queue[0]["coverart"] != "Songs/Images/generic-thumb.png":
                 os.remove(queue[0]["coverart"])
             else:
                 os.remove(queue[0]["coverart"])
@@ -318,11 +318,11 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
             "id": len(queue),
             "userfile": False,
         }
-        if os.path.exists(f"Songs\Images\Videos\{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
-            song["coverart"] = f"Songs\Images\Videos\{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
+        if os.path.exists(f"Songs/Images/Videos/{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
+            song["coverart"] = f"Songs/Images/Videos/{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
         else:
             
-             song["coverart"] = "Songs\Images\generic-thumb.png"
+             song["coverart"] = "Songs/Images/generic-thumb.png"
         db.add(db, song)
     else:
         await interaction.edit_original_response(content =  "Found the song, using cached song")
@@ -362,7 +362,7 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
                 shutil.copyfileobj(res.raw, f)
             logs.info('Song sucessfully Downloaded: ',file_name, 'from: ', file)
         else:
-            logs.info('Song Couldn\'t be retrieved')
+            logs.info("Song Couldn't be retrieved")
 
         await interaction.edit_original_response(content = f"Successfully Downloaded: {file_name.split('/')[1]}")
     
@@ -400,34 +400,34 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
         song["user"] = interaction.user
     if filextension == "flac":
         try:
-            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs\Images\generic-thumb.png"
+            song["coverart"] = "Songs/Images/generic-thumb.png"
     if filextension == "mp3":
         try:
-            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs\Images\generic-thumb.png"
+            song["coverart"] = "Songs/Images/generic-thumb.png"
     if filextension == "mp4":
         try:
-            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs\Images\generic-thumb.png"
+            song["coverart"] = "Songs/Images/generic-thumb.png"
     if filextension == "m4a":
         try:
-            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs\Images\generic-thumb.png"
+            song["coverart"] = "Songs/Images/generic-thumb.png"
     else:
-        song["coverart"] = "Songs\Images\generic-thumb.png"
+        song["coverart"] = "Songs/Images/generic-thumb.png"
 
     logs.info(song)
     queue.append(song)
@@ -457,7 +457,7 @@ async def QueueCommand(interaction: discord.Interaction):
 
             embed = discord.Embed(title=f"Queue Page: {page+1} / {len(temptemp)}")
             for i in temptemp[page]:
-                embed.add_field(name=i["id"], value = f"Title: {i['title']}\n\nAuthor: {i['author']}\n\nURL: {i['url']}\n\nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
+                embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nAuthor: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
             totalp = 0
             totalq = 0
             for i in temptemp[page]:
@@ -494,7 +494,7 @@ async def QueueCommand(interaction: discord.Interaction):
         for i in temptemp:
             logs.info(i)
         for i in temptemp[page]:
-            embed.add_field(name=i["id"], value = f"Title: {i['title']}\n\nAuthor: {i['author']}\n\nURL: {i['url']}\n\nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
+            embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nAuthor: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
         totalp = 0
         totalq = 0
         for i in temptemp[page]:
