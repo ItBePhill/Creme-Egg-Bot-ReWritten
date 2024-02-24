@@ -398,38 +398,36 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
         song["title"] = file_name
         song["author"] = "various artists"
         song["user"] = interaction.user
-
-    match filextension:
-        case "flac":
-            try:
-                if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                    subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-                song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
-            except:
-                song["coverart"] = "Songs\Images\generic-thumb.png"
-        case "mp3":
-            try:
-                if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                    subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-                song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
-            except:
-                song["coverart"] = "Songs\Images\generic-thumb.png"
-        case "mp4":
-            try:
-                if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                    subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-                song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
-            except:
-                song["coverart"] = "Songs\Images\generic-thumb.png"
-        case "m4a":
-            try:
-                if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
-                    subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
-                song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
-            except:
-                song["coverart"] = "Songs\Images\generic-thumb.png"
-        case _:
+    if filextension == "flac":
+        try:
+            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+        except:
             song["coverart"] = "Songs\Images\generic-thumb.png"
+    if filextension == "mp3":
+        try:
+            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+        except:
+            song["coverart"] = "Songs\Images\generic-thumb.png"
+    if filextension == "mp4":
+        try:
+            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+        except:
+            song["coverart"] = "Songs\Images\generic-thumb.png"
+    if filextension == "m4a":
+        try:
+            if not os.path.exists(f"Songs\Images\{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs\Images\{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs\Images\{song['title']} cover.jpg"
+        except:
+            song["coverart"] = "Songs\Images\generic-thumb.png"
+    else:
+        song["coverart"] = "Songs\Images\generic-thumb.png"
 
     logs.info(song)
     queue.append(song)
