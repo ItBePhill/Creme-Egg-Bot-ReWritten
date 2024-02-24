@@ -213,7 +213,7 @@ class Player():
             await asyncio.sleep(1.0)
         if queue[0]["userfile"]:
             os.remove(queue[0]["filename"])
-            if queue[0]["coverart"] != "Songs/Images/generic-thumb.png":
+            if queue[0]["coverart"] != "Songs//Images//generic-thumb.png":
                 os.remove(queue[0]["coverart"])
             else:
                 os.remove(queue[0]["coverart"])
@@ -310,7 +310,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         song = {
             "filename": file,
             "title": data["title"],
-            "url": f'https://www.youtube.com/watch?v={data["id"]}',
+            "url": f'https://www.youtube.com//watch?v={data["id"]}',
             "author" : data['channel'],
             "coverart": "",
             "user": interaction.user,
@@ -318,11 +318,11 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
             "id": len(queue),
             "userfile": False,
         }
-        if os.path.exists(f"Songs/Images/Videos/{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
-            song["coverart"] = f"Songs/Images/Videos/{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
+        if os.path.exists(f"Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
+            song["coverart"] = f"Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
         else:
             
-             song["coverart"] = "Songs/Images/generic-thumb.png"
+             song["coverart"] = "Songs//Images//generic-thumb.png"
         db.add(db, song)
     else:
         await interaction.edit_original_response(content =  "Found the song, using cached song")
@@ -353,8 +353,8 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
         await channel.connect(self_deaf=True)
 
     url = file
-    await interaction.channel.send(str(file).split("/")[6].split("?")[0])
-    file_name = f"Songs/{str(file).split('/')[6].split('?')[0]}"
+    await interaction.channel.send(str(file).split("//")[6].split("?")[0])
+    file_name = f"Songs/{str(file).split('//')[6].split('?')[0]}"
     if not os.path.exists(file_name):
         res = requests.get(url, stream = True)
         if res.status_code == 200:
@@ -400,34 +400,34 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
         song["user"] = interaction.user
     if filextension == "flac":
         try:
-            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs/Images/generic-thumb.png"
+            song["coverart"] = "Songs//Images//generic-thumb.png"
     if filextension == "mp3":
         try:
-            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs/Images/generic-thumb.png"
+            song["coverart"] = "Songs//Images//generic-thumb.png"
     if filextension == "mp4":
         try:
-            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs/Images/generic-thumb.png"
+            song["coverart"] = "Songs//Images//generic-thumb.png"
     if filextension == "m4a":
         try:
-            if not os.path.exists(f"Songs/Images/{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs/Images/{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"Songs/Images/{song['title']} cover.jpg"
+            if not os.path.exists(f"Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "Songs/Images/generic-thumb.png"
+            song["coverart"] = "Songs//Images//generic-thumb.png"
     else:
-        song["coverart"] = "Songs/Images/generic-thumb.png"
+        song["coverart"] = "Songs//Images//generic-thumb.png"
 
     logs.info(song)
     queue.append(song)
