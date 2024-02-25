@@ -45,6 +45,7 @@ async def update(interaction: discord.Interaction):
 
 @tree.command(name = "restart-bot", description="Restart the bot", guild = discord.Object(id=1014812996226256927))
 async def update(interaction: discord.Interaction):
+  await interaction.response.defer()
   await CremeModules.Restart(interaction) 
 
 
