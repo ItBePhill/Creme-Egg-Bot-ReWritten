@@ -29,7 +29,7 @@ async def on_ready():
     if platform.platform() == "Windows":
       await client.get_channel(1105906381552369725).send(f"Connected!")
     else:
-      await client.get_channel(1109167764981174343).send(f"Connected")
+      await client.get_channel(1109167764981174343).send(f"Connected!")
     logs.info("Connected!")
     await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = "Nothing"))
 @tree.command(name = "module_info", description="get all the information for a specified module", guild = discord.Object(id=1014812996226256927))
