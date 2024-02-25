@@ -6,7 +6,7 @@ import yt_dlp as youtube_dl
 import os
 import logs
 import CremeModules
-
+import platform
 #-------------------------------------------------
 
 #Initialisation-----------------------------------
@@ -26,7 +26,10 @@ tree = app_commands.CommandTree(client)
 @client.event
 async def on_ready():
     await tree.sync(guild=discord.Object(id=1014812996226256927))
-    await client.get_channel(1105906381552369725).send(f"Connected!")
+    if platform.platform() == "windows":
+      await client.get_channel(1105906381552369725).send(f"Connected!")
+    else:
+      await client.get_channel(1109167764981174343).send(f"Connected!")
     logs.info("Connected!")
     await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = "Nothing"))
 @tree.command(name = "module_info", description="get all the information for a specified module", guild = discord.Object(id=1014812996226256927))
@@ -45,8 +48,6 @@ async def update(interaction: discord.Interaction):
 # @tree.command(name = "test_command", description="Test Command Please Ignore", guild = discord.Object(id=1014812996226256927))
 # async def testcommand(interaction: discord.Interaction):
 #   pass            
-
-    
 
 
 if CremeModules.BaseModule.enabled == True:
