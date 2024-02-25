@@ -1,11 +1,15 @@
 import os
 
-files = os.listdir()
+files = os.listdir(f"{os.path.dirname(__file__)}//Songs")
 
-for i in files:
-    if os.path.splitext(i)[1] == ".webm" or os.path.splitext(i)[1] == ".webp":
-        os.remove(i)
-        print(f"removed: {i}")
-    
+for file in files:
+    if os.path.splitext(file)[1] == ".webm":
+        os.remove(f"{os.path.dirname(__file__)}//Songs//{file}.webm")
 
+files = os.listdir(f"{os.path.dirname(__file__)}//Songs//Images//Videos")
 
+for file in files:
+    if os.path.splitext(file)[1] == ".webp":
+        os.remove(f"{os.path.dirname(__file__)}//Songs//Images//Videos//{file}")
+if os.path.exists(f"{os.path.dirname(__file__)}/songs.db"):
+    os.remove(f"{os.path.dirname(__file__)}/songs.db")
