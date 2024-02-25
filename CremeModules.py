@@ -40,7 +40,7 @@ async def UpdateCommand(interaction: discord.Interaction):
     await Restart(interaction)
 
 async def Restart(interaction):
-        await interaction.response.send_message("Restarting... in")
+        await interaction.followup.send(content = "Restarting... in")
         await interaction.channel.send("3")
         await asyncio.sleep(1)
         await interaction.channel.send("2")
