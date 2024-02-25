@@ -310,7 +310,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         song = {
             "filename": file,
             "title": data["title"],
-            "url": f'https://www.youtube.com//watch?v={data["id"]}',
+            "url": f'https:/www.youtube.com/watch?v={data["id"]}',
             "author" : data['channel'],
             "coverart": "",
             "user": interaction.user,

@@ -7,7 +7,7 @@ logs = len(os.listdir(logpath))
 if not os.path.exists(logpath):
     os.makedirs(logpath)
 
-logging.basicConfig(filename=f'{logpath}\{logs+1} {date.today()} Log.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
+logging.basicConfig(filename=f'{logpath}\\{logs+1} {date.today()} Log.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
 
 
 def info(message):
