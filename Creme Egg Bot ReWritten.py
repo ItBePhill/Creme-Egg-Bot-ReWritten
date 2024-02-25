@@ -26,7 +26,7 @@ tree = app_commands.CommandTree(client)
 @client.event
 async def on_ready():
     await tree.sync(guild=discord.Object(id=1014812996226256927))
-    if platform.platform() == "windows":
+    if platform.platform() == "Windows":
       await client.get_channel(1105906381552369725).send(f"Connected!")
     else:
       await client.get_channel(1109167764981174343).send(f"Connected!")
@@ -42,6 +42,10 @@ async def module_info(interaction: discord.Interaction, name: str):
 @tree.command(name = "update_bot", description="Update the bot", guild = discord.Object(id=1014812996226256927))
 async def update(interaction: discord.Interaction):
   await CremeModules.UpdateCommand(interaction) 
+
+@tree.command(name = "Restart Bot", description="Restart the bot", guild = discord.Object(id=1014812996226256927))
+async def update(interaction: discord.Interaction):
+  await CremeModules.Restart(interaction) 
 
 
 

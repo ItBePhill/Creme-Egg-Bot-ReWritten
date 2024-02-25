@@ -6,6 +6,9 @@ import subprocess
 import discord
 from Modules import *
 from inspect import getmembers, isfunction
+import asyncio
+import sys
+import platform
 logs.info("Creme Modules Base has started!")
 
 
@@ -34,3 +37,18 @@ async def UpdateCommand(interaction: discord.Interaction):
     except Exception as e:
         await interaction.followup.send(str(e))
     await interaction.followup.send(output)
+    await Restart(interaction)
+
+async def Restart(interaction):
+        await interaction.response.send_message("Restarting... in")
+        await interaction.channel.send("3")
+        await asyncio.sleep(1)
+        await interaction.channel.send("2")
+        await asyncio.sleep(1)
+        await interaction.channel.send("1")
+        await asyncio.sleep(1)
+        await interaction.channel.send("Restarting (It may take a while for the bot to start up again\n(It will message connected when it has started up)")
+        if platform.platform() == "Linux":
+            os.execl("/usr/bin/python3", 'python', "Creme Egg Bot ReWritten.py", *sys.argv[1:])
+        else:
+            os.execl(sys.executable, 'python', "Creme Egg Bot ReWritten.py", *sys.argv[1:])
