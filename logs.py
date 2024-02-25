@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import logging
 import os
 from datetime import date
@@ -50,4 +49,3 @@ def warn(message):
 def error(exc):
     logging.error("Something Went Wrong!", exc_info=exc)
     print("Something Went Wrong! Check Logs for information")
->>>>>>> c9c37bcfdd93d6fb44af648a171a5e300917241b
