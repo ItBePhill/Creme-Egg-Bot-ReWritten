@@ -27,7 +27,7 @@ tree = app_commands.CommandTree(client)
 async def on_ready():
     await tree.sync(guild=discord.Object(id=1014812996226256927))
     if platform.platform() == "Windows":
-      await client.get_channel(1105906381552369725).send(f"Connected")
+      await client.get_channel(1105906381552369725).send(f"Connected!")
     else:
       await client.get_channel(1109167764981174343).send(f"Connected!")
     logs.info("Connected!")
