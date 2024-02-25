@@ -49,6 +49,6 @@ async def Restart(interaction):
         await asyncio.sleep(1)
         await interaction.channel.send("Restarting (It may take a while for the bot to start up again\n(It will message connected when it has started up)")
         if platform.platform() == "Linux":
-            os.execl("/usr/bin/python3", 'python', "Creme Egg Bot ReWritten.py", *sys.argv[1:])
+            os.execl("/usr/bin/python3", 'python', f"{os.path.dirname(__file__)}//Creme Egg Bot ReWritten.py", *sys.argv[1:])
         else:
             os.execl(sys.executable, 'python', "Creme Egg Bot ReWritten.py", *sys.argv[1:])
