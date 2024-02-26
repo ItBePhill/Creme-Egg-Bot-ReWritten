@@ -1,13 +1,13 @@
 import logging
 import os
 from datetime import date
-logpath = os.path.join(os.path.dirname(__file__), "Logs")
+logpath = os.path.join(os.path.dirname(__file__), "Logs/")
 logs = len(os.listdir(logpath))
 
 if not os.path.exists(logpath):
     os.makedirs(logpath)
 
-logging.basicConfig(filename=f'{logpath}\\{logs+1} {date.today()} Log.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
+logging.basicConfig(filename=f'{logpath}{logs+1}_{date.today()}_Log.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level = logging.INFO)
 
 
 def info(message):
