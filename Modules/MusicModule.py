@@ -105,7 +105,7 @@ ytdl_format_options = {
     'writethumbnail': True,
     'embedthumbnail': True,
     'concurrent-fragments': 2,
-    'paths': {'home': f"{os.path.dirname(__file__)}//Songs", 'thumbnail': 'Images/Videos'}
+    'paths': {'home': f"{os.getcwd()}//Songs", 'thumbnail': 'Images/Videos'}
 }
 ytdl_format_options_no_down = {
     'format': 'bestaudio/best',
@@ -140,7 +140,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
         if 'entries' in data:
             data = data['entries'][0]
-        filename = os.path.join(f"{os.path.dirname(__file__)}//Songs", data['title']) if stream else ytdl.prepare_filename(data)
+        filename = os.path.join(f"{os.getcwd()}//Songs", data['title']) if stream else ytdl.prepare_filename(data)
         return filename
     @classmethod
     async def from_url_without_download(cls, url, *, loop=None, stream=False):
@@ -213,7 +213,7 @@ class Player():
             await asyncio.sleep(1.0)
         if queue[0]["userfile"]:
             os.remove(queue[0]["filename"])
-            if queue[0]["coverart"] != f"{os.path.dirname(__file__)}//Songs//Images//generic-thumb.png":
+            if queue[0]["coverart"] != f"{os.getcwd()}//Songs//Images//generic-thumb.png":
                 os.remove(queue[0]["coverart"])
             else:
                 os.remove(queue[0]["coverart"])
@@ -318,11 +318,11 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
             "id": len(queue),
             "userfile": False,
         }
-        if os.path.exists(f"{os.path.dirname(__file__)}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
-            song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
+        if os.path.exists(f"{os.getcwd()}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
         else:
             
-             song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//generic-thumb.png"
+             song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
         db.add(db, song)
     else:
         await interaction.edit_original_response(content =  "Found the song, using cached song")
@@ -354,7 +354,7 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
 
     url = file
     await interaction.channel.send(str(file).split("//")[6].split("?")[0])
-    file_name = f"{os.path.dirname(__file__)}//Songs/{str(file).split('//')[6].split('?')[0]}"
+    file_name = f"{os.getcwd()}//Songs/{str(file).split('//')[6].split('?')[0]}"
     if not os.path.exists(file_name):
         res = requests.get(url, stream = True)
         if res.status_code == 200:
@@ -400,34 +400,34 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
         song["user"] = interaction.user
     if filextension == "flac":
         try:
-            if not os.path.exists(f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.path.dirname(__file__)}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "{os.path.dirname(__file__)}//Songs//Images//generic-thumb.png"
+            song["coverart"] = "{os.getcwd()}//Songs//Images//generic-thumb.png"
     if filextension == "mp3":
         try:
-            if not os.path.exists(f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.path.dirname(__file__)}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//generic-thumb.png"
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
     if filextension == "mp4":
         try:
-            if not os.path.exists(f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.path.dirname(__file__)}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "{os.path.dirname(__file__)}//Songs//Images//generic-thumb.png"
+            song["coverart"] = "{os.getcwd()}//Songs//Images//generic-thumb.png"
     if filextension == "m4a":
         try:
-            if not os.path.exists(f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.path.dirname(__file__)}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//{song['title']} cover.jpg"
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//generic-thumb.png"
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
     else:
-        song["coverart"] = f"{os.path.dirname(__file__)}//Songs//Images//generic-thumb.png"
+        song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
 
     logs.info(song)
     queue.append(song)
