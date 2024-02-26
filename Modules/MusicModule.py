@@ -305,8 +305,9 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                     logs.info(i["name"])
                     artists += f", {i['name']}"
                 first = False
-            ytlink = f"{track['name']} by {artists}"           
+            ytlink = f"{track['name']} by {artists}"     
             r.close()
+            return ytlink
     
 
     logs.info(f"Play command was called! by: {interaction.user}, with Query: {query}")
@@ -316,14 +317,15 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         channel = interaction.user.voice.channel
         await interaction.edit_original_response(content="Joining the voice channel..")
         await channel.connect(self_deaf=True)
+    if "spotify" in query:
+            files = await spotify(interaction, query)
+            file = files[0]
+    query = file
     data = await YTDLSource.from_url_without_download(query)
     logs.info(data)
     result = db.DB(db, data["title"])
     if result == None:
         await interaction.edit_original_response(content =  "Didn't find song, Downloading the song...")
-        if "spotify" in query:
-            files = await spotify(interaction, query)
-            file = files[0]
         else:
             files = await youtube(interaction, query)
             file = files[0]
