@@ -326,9 +326,8 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
     result = db.DB(db, data["title"])
     if result == None:
         await interaction.edit_original_response(content =  "Didn't find song, Downloading the song...")
-        else:
-            files = await youtube(interaction, query)
-            file = files[0]
+        files = await youtube(interaction, query)
+        file = files[0]
         song = {
             "filename": file,
             "title": data["title"],
