@@ -32,9 +32,9 @@ async def ShowsCommand(interaction: discord.Interaction):
                     newentry["time"] = f"{self.hours.value}:{self.minutes.value}:{self.seconds.value}"
 
                     logs.info(f"Deleting {entry['name']}.json")
-                    os.remove(f"{os.path.dirname(__file__)}//Json//{entry['name']}.json")
+                    os.remove(f"{os.getcwd()}//Json//{entry['name']}.json")
                     logs.info(f"Creating {newentry['name']}.json")
-                    with open(f"{os.path.dirname(__file__)}//Json//{newentry['name']}.json", "w") as f:
+                    with open(f"{os.getcwd()}//Json//{newentry['name']}.json", "w") as f:
                         json.dump(newentry, f)
                         f.close()
                         
@@ -63,8 +63,8 @@ async def ShowsCommand(interaction: discord.Interaction):
         selectionbox.callback = lambda i: selected(selectionbox, i, interaction)
         dicts = []
         x = 0
-        for i in os.listdir(os.path.dirname(__file__)):
-            with open(os.path.join(f"{os.path.dirname(__file__)}//Json", i), "r") as f:
+        for i in os.listdir(f"{os.getcwd()}/Json"):
+            with open(os.path.join(f"{os.getcwd()}//Json", i), "r") as f:
                 data = json.load(f)
                 dicts.append(data)
             x+=1
@@ -94,7 +94,7 @@ async def ShowsCommand(interaction: discord.Interaction):
                 newentry["episode"] = self.episode.value
                 newentry["time"] = f"{self.hours.value}:{self.minutes.value}:{self.seconds.value}"
                 logs.info(f"Creating {newentry['name']}.json")
-                with open(f"{os.path.dirname(__file__)}//Json//{newentry['name']}.json", "w") as f:
+                with open(f"{os.getcwd()}//Json//{newentry['name']}.json", "w") as f:
                     json.dump(newentry, f)
                     f.close()
                     
@@ -126,8 +126,8 @@ async def ShowsCommand(interaction: discord.Interaction):
         selectionbox.callback = lambda i: selected(selectionbox, i, interaction)
         dicts = []
         x = 0
-        for i in os.listdir(f"{os.path.dirname(__file__)}//Json"):
-            with open(os.path.join(f"{os.path.dirname(__file__)}//Json", i), "r") as f:
+        for i in os.listdir(f"{os.getcwd()}//Json"):
+            with open(os.path.join(f"{os.getcwd()}//Json", i), "r") as f:
                 data = json.load(f)
                 dicts.append(data)
             x+=1
@@ -155,7 +155,7 @@ async def ShowsCommand(interaction: discord.Interaction):
 
             message = await ii.channel.send(f"Removing... {entry['name']}")
             logs.info(f"Removing {entry['name']}.json")
-            os.remove(f"{os.path.dirname(__file__)}//Json//{entry['name']}.json")
+            os.remove(f"{os.getcwd()}//Json//{entry['name']}.json")
             await message.edit(content = f"Removed... {entry['name']}", embed = None, view = None)
 
         await i.response.send_message("Thinking...", ephemeral=True)
@@ -166,8 +166,8 @@ async def ShowsCommand(interaction: discord.Interaction):
         selectionbox.callback = lambda i: selected(selectionbox, i, interaction)
         dicts = []
         x = 0
-        for i in os.listdir(f"{os.path.dirname(__file__)}//Json"):
-            with open(os.path.join(f"{os.path.dirname(__file__)}//Json", i), "r") as f:
+        for i in os.listdir(f"{os.getcwd()}//Json"):
+            with open(os.path.join(f"{os.getcwd()}//Json", i), "r") as f:
                 data = json.load(f)
                 dicts.append(data)
             x+=1
