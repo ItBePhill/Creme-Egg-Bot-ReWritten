@@ -63,7 +63,7 @@ async def ShowsCommand(interaction: discord.Interaction):
         selectionbox.callback = lambda i: selected(selectionbox, i, interaction)
         dicts = []
         x = 0
-        for i in os.listdir(os.chdir(os.path.dirname(__file__))):
+        for i in os.listdir(os.path.dirname(__file__)):
             with open(os.path.join(f"{os.path.dirname(__file__)}//Json", i), "r") as f:
                 data = json.load(f)
                 dicts.append(data)
