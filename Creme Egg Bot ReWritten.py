@@ -14,7 +14,8 @@ logs.info("Starting The Bot")
 #Function that starts the bot
 def runbot():
     with open("key.txt", "r") as r:
-      TOKEN = r.read()
+      TOKEN = r.readlines()[0]
+      
       r.close()
 
     client.run(TOKEN)

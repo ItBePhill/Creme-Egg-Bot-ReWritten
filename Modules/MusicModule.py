@@ -15,6 +15,8 @@ import Globals as g
 import audioread
 import subprocess
 import yt_dlp as youtube_dl
+import spotipy
+from spotipy import SpotifyClientCredentials
 from database import *
 logs.info("Music Module Started Successfully!")
 enabled = True
@@ -288,7 +290,23 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         songs = await Down(interaction, [query], 0)
         return songs
     async def spotify(interaction: discord.Interaction, query: str):
-        return None
+        with open("key.txt", "r") as r:
+            client_secret = r.readlines()[1]
+            client_id = r.readlines()[2]
+            spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
+            track = spotify.track(ytlink)
+            artists = ""
+            first = True
+            for i in track["artists"]:
+                if first:
+                    logs.info(i["name"])
+                    artists += f"{i['name']}"
+                else:
+                    logs.info(i["name"])
+                    artists += f", {i['name']}"
+                first = False
+            ytlink = f"{track['name']} by {artists}"           
+            r.close()
     
 
     logs.info(f"Play command was called! by: {interaction.user}, with Query: {query}")
