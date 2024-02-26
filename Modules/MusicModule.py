@@ -201,8 +201,8 @@ class Player():
             await Player.player(interaction, client)
             return queue, first
         else:
-            await interaction.channel.send("Reached the end of the Queue!")
-            voiceclient.voice_disconnect()
+            await interaction.channel.send("Reached the end of the queue!")
+            voiceclient.disconnect()
             logs.info("Queue empty exiting player")
             return queue, first
     @classmethod
