@@ -202,14 +202,14 @@ class Player():
             return queue, first
         else:
             await interaction.channel.send("Reached the end of the queue!")
-            voiceclient.disconnect()
+            await voiceclient.disconnect()
             logs.info("Queue empty exiting player")
             return queue, first
     @classmethod
     async def waitforend(self, interaction, queue):
         # checktask = None
         # checktask = asyncio.create_task(coro = checkforcommands(interaction, thread1, checktask))
-        while not g.variables["timelapsed"] >= queue[0]["dur"]:
+        while self.voiceclient.is_playing():
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
