@@ -404,7 +404,7 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
                 subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
             song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "{os.getcwd()}//Songs//Images//generic-thumb.png"
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
     if filextension == "mp3":
         try:
             if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
@@ -418,7 +418,7 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
                 subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
             song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
         except:
-            song["coverart"] = "{os.getcwd()}//Songs//Images//generic-thumb.png"
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
     if filextension == "m4a":
         try:
             if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
