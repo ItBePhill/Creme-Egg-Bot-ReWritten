@@ -523,7 +523,6 @@ async def ShuffleCommand(interaction: discord.Interaction):
 
 async def RemoveCommand(interaction: discord.Interaction, index):
     logs.info(f"Remove command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Removee command was called! by: {interaction.user}")
     global queue
     name = queue[index]
     if queue != []:
@@ -548,17 +547,17 @@ async def RemoveCommand(interaction: discord.Interaction, index):
 
 async def PauseCommand(interaction: discord.Interaction):
     logs.info(f"Pause command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Pause command was called! by: {interaction.user}")
+    await interaction.response.send_message(f"Pausing!")
     await Player.pause()
 
 async def ResumeCommand(interaction: discord.Interaction):
     logs.info(f"Resume command was called by: {interaction.user}")
-    await interaction.response.send_message(f"Pause command was called! by: {interaction.user}")
+    await interaction.response.send_message(f"Resuming...")
     await Player.resume()
 
 async def SkipCommand(interaction: discord.Interaction, client):
     logs.info(f"Skip command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Skip command was called! by: {interaction.user}")
+    await interaction.response.send_message(f"Skipping...")
     voiceclient = client.voice_clients[0]
     if not voiceclient.is_playing():
         await interaction.followup.send("Nothing is playing!")
@@ -568,12 +567,12 @@ async def SkipCommand(interaction: discord.Interaction, client):
 
 async def StopCommand(interaction: discord.Interaction):
     logs.info(f"Stop command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Stop command was called! by: {interaction.user}")
+    await interaction.response.send_message(f"Stopping and Clearing Queue...")
     await Player.stop()
 
 async def RestartCommand(interaction: discord.Interaction, client):
     logs.info(f"Restart command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Restart command was called! by: {interaction.user}")
+    await interaction.response.send_message(f"Restarting...")
     await Player.restart(interaction, client)
 
 async def LeaveCommand(interaction: discord.Interaction, client: discord.Client):
@@ -599,7 +598,7 @@ async def JoinCommand(interaction: discord.Interaction):
 
 async def NowPlayingCommand(interaction: discord.Interaction, client):
     logs.info(f"Now Playing command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Now Playing command was called! by: {interaction.user}")
+    await interaction.response.send_message("Thinking...")
     voiceclient: discord.VoiceClient = client.voice_clients[0]
     if not voiceclient.is_playing():
         await embeds.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
