@@ -211,7 +211,7 @@ class Player():
     async def waitforend(self, interaction, queue):
         # checktask = None
         # checktask = asyncio.create_task(coro = checkforcommands(interaction, thread1, checktask))
-        while self.voiceclient.is_playing():
+        while g.variables["timelapsed"] != queue[0]["dur"]:
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
