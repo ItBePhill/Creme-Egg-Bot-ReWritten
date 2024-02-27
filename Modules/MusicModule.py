@@ -318,9 +318,10 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         await interaction.edit_original_response(content="Joining the voice channel..")
         await channel.connect(self_deaf=True)
     if "spotify" in query:
+            file = None
             files = await spotify(interaction, query)
             file = files[0]
-    query = file
+            query = file
     data = await YTDLSource.from_url_without_download(query)
     logs.info(data)
     result = db.DB(db, data["title"])
