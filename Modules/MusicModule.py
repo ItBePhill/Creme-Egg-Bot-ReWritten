@@ -292,8 +292,8 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
     async def spotify(interaction: discord.Interaction, query: str):
         with open("key.txt", "r") as r:
             keys = r.readlines()
-            client_secret = int(keys[1])
-            client_id = int(keys[2])
+            client_secret = keys[1]
+            client_id = keys[2]
             r.close()
             spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
             track = spotify.track(query)
