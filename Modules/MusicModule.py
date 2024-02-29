@@ -1,7 +1,6 @@
 #Music Module
-
+#Imports
 import logs
-
 import discord
 import datetime
 import numpy as np
@@ -18,12 +17,19 @@ import yt_dlp as youtube_dl
 import spotipy
 from spotipy import SpotifyClientCredentials
 from database import *
+#/Imports
+#Startup
 logs.info("Music Module Started Successfully!")
 enabled = True
+#Check if the module is running or not
 def running():
     return True
 first = True
+#/Startup
+
+#Embeds
 class embeds():
+    #Create the "Playing" Embed, has a variation for Now Playing and Started Playing
     @classmethod
     async def CreateEmbedPlaying(self, interaction: discord.Interaction, song: list, started: bool):
         message: discord.Message = await interaction.channel.send(content = "Thinking...")
@@ -47,6 +53,7 @@ class embeds():
         embed.timestamp = datetime.datetime.now()
         await last_message.delete()
         await interaction.channel.send(content = None, embed = embed, file = None)
+    # Create Embed for Addition / Info about a song
     @classmethod
     async def CreateEmbedAdded(self, interaction: discord.Interaction, song): 
         message = await interaction.channel.send("Thinking...")
@@ -75,8 +82,12 @@ class embeds():
         embed.timestamp = datetime.datetime.now()
         await last_message.delete()
         await interaction.channel.send(content = None, embed = embed, file = None)
+#/Embeds
+        
 
-# Youtube DL Stuff / queue
+# Youtube DL Stuff
+        
+# Set up for yt-dlp / ffmpeg
 youtube_dl.utils.bug_reports_message = lambda: ''
 nowplaying_default={
     "filename": "N/A",
@@ -127,6 +138,8 @@ ytdl_format_options_no_down = {
 ffmpeg_options = {
     'options': '-vn'
 }
+
+#functions for downloading and getting a song
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 ytdl_no_down = youtube_dl.YoutubeDL(ytdl_format_options_no_down)
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -151,23 +164,24 @@ class YTDLSource(discord.PCMVolumeTransformer):
         if 'entries' in data:
             data = data['entries'][0]
         return data
-# End Of Youtube DL Stuff
+#/Youtube DL Stuff
 
-
+#Player and Related
+#Reorder the queue after a song or other operation is made
 async def queuereorder():
     global queue
     for song in queue:
         song["id"] = queue.index(song)
     return queue
-    
 
-
+#Set the queue variable
 queue = []
-nowplaying = {}
+#Set TimeElapsed Variable
 g.variables["timelapsed"] = 0
 paused = False
-
+#Player Class
 class Player():
+    #player - plays the music and cycles through the queue
     @classmethod
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         global queue, first
@@ -207,10 +221,9 @@ class Player():
             await voiceclient.disconnect()
             logs.info("Queue empty exiting player")
             return queue, first
+    #waitforend - Waits for the end of the current song and moves on to the next song, also handles pausing
     @classmethod
     async def waitforend(self, interaction, queue):
-        # checktask = None
-        # checktask = asyncio.create_task(coro = checkforcommands(interaction, thread1, checktask))
         while g.variables["timelapsed"] != queue[0]["dur"]:
             if not self.paused:
                 g.variables["timelapsed"] += 1
@@ -221,9 +234,9 @@ class Player():
                 os.remove(queue[0]["coverart"])
             else:
                 os.remove(queue[0]["coverart"])
-        # await checkforcommands.kill(checktask)
         queue.pop(0)
         return queue
+    #stop - stops the currently playing song and clears the queue
     @classmethod
     async def stop(self):
         global queue
@@ -232,6 +245,7 @@ class Player():
         queue = []
         self.thread.cancel()
         return queue
+    #stop - stops the currently playing song and removes it from the queue before starting the player again
     @classmethod
     async def skip(self, interaction, client):
         logs.info("Skipped")
@@ -242,6 +256,7 @@ class Player():
         g.variables["timelapsed"] = 0
         await Player.player(interaction, client)
         return queue
+    #restart - stops the current song and starts player again from the same song
     @classmethod
     async def restart(self, interaction, client):
         logs.info("Restarted")
@@ -251,26 +266,30 @@ class Player():
         g.variables["timelapsed"] = 0
         await Player.player(interaction, client)
         return queue
+    #pause - pause playing and update paused so waitforend doesnt keep counting
     @classmethod
     async def pause(self):
         logs.info("Paused")
         self.paused = True
         self.voiceclient.pause()
+     #pause - resume playing and update paused so waitforend continues counting
     @classmethod
     async def resume(self):
         logs.info("Resuming")
         self.paused = False
         self.voiceclient.resume()
     
-
+#/Player and Related
+        
+#Commands
+        
+#PlayCommand - Takes a Query, and plays it on discord
 async def PlayCommand(interaction: discord.Interaction, query: str, client: discord.Client):
-    """
-    TODO:
-    
-    """
+    #Prepare for downloading a playlist
     async def DownPrep(interaction: discord.Interaction, queries: list):
         #This function will find out how many threads are needed for a playlist
         pass
+    #Download each song in the queries list
     async def Down(interaction: discord.Interaction, queries: list, thread: int):
         logs.info("Started Down Function")
         songs = []
@@ -283,12 +302,13 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         logs.info(f"Thread {thread} finished all downloads")
         return songs
 
-
+    #youtube -  donwload a youtube link and return the filename
     async def youtube(interaction: discord.Interaction, query: str):
         if "playlist" in query:
             logs.info("Found A Playlist")
         songs = await Down(interaction, [query], 0)
         return songs
+    #spotify -  Search for the song on spotify and get the name and artist and search for it on youtube and return the filename
     async def spotify(interaction: discord.Interaction, query: str):
         with open("key.txt", "r") as r:
             keys = r.readlines()
@@ -365,7 +385,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
     queue.append(song)
     await embeds.CreateEmbedAdded(interaction, song)
     await Player.player(interaction, client)
-
+#PlayFileCommand -  Play a file provided by the user
 async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attachment, client):
 
     logs.info(f"Play File command was called! by: {interaction.user}, with Query: {file}")
@@ -459,6 +479,7 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
     await Player.player(interaction, client)
 
 page = 0
+#QueueCommand - Get and show the queue, in a nice format
 async def QueueCommand(interaction: discord.Interaction):
     logs.info(f"Queue command was called! by: {interaction.user}")
     global page
@@ -540,11 +561,11 @@ async def QueueCommand(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("The Queue is Empty!")
         return page
-
+#ShuffleCommand - Shuffle the Queue
 async def ShuffleCommand(interaction: discord.Interaction):
     logs.info(f"Shuffle command was called! by: {interaction.user}")
     await interaction.response.send_message(f"Shuffle command was called! by: {interaction.user}")
-
+#RemoveCommand - Remove a video from the queue
 async def RemoveCommand(interaction: discord.Interaction, index):
     logs.info(f"Remove command was called! by: {interaction.user}")
     global queue
@@ -568,17 +589,17 @@ async def RemoveCommand(interaction: discord.Interaction, index):
     else:
         await interaction.response.send_message(content=f"There is nothing to remove!")
     return queue
-
+#PauseCommand -  Pause playing
 async def PauseCommand(interaction: discord.Interaction):
     logs.info(f"Pause command was called! by: {interaction.user}")
     await interaction.response.send_message(f"Pausing!")
     await Player.pause()
-
+#ResumeCommand -  Resume from pausing
 async def ResumeCommand(interaction: discord.Interaction):
     logs.info(f"Resume command was called by: {interaction.user}")
     await interaction.response.send_message(f"Resuming...")
     await Player.resume()
-
+#SkipCommand - Skip the current video
 async def SkipCommand(interaction: discord.Interaction, client):
     logs.info(f"Skip command was called! by: {interaction.user}")
     await interaction.response.send_message(f"Skipping...")
@@ -588,17 +609,17 @@ async def SkipCommand(interaction: discord.Interaction, client):
     else:
         await Player.skip(interaction, client)
 
-
+#StopCommand - Stop the current playing video and clear the queue
 async def StopCommand(interaction: discord.Interaction):
     logs.info(f"Stop command was called! by: {interaction.user}")
     await interaction.response.send_message(f"Stopping and Clearing Queue...")
     await Player.stop()
-
+#RestartCommand -  Restart the current video
 async def RestartCommand(interaction: discord.Interaction, client):
     logs.info(f"Restart command was called! by: {interaction.user}")
     await interaction.response.send_message(f"Restarting...")
     await Player.restart(interaction, client)
-
+#LeaveCommand -  leave the voice channel
 async def LeaveCommand(interaction: discord.Interaction, client: discord.Client):
     logs.info(f"Leave command was called! by: {interaction.user}")
     if client.voice_clients == []:
@@ -609,7 +630,7 @@ async def LeaveCommand(interaction: discord.Interaction, client: discord.Client)
         await client.change_presence(status=discord.Status.online, activity=discord.Game(name=f"Nothing"))
         await voiceclient.disconnect()
         await interaction.response.send_message("Left!")
-
+#JoinCommand -  Join the voice channel the user is currently in
 async def JoinCommand(interaction: discord.Interaction):
     logs.info(f"Join command was called! by: {interaction.user}")
     if interaction.user.voice == None:
@@ -619,7 +640,7 @@ async def JoinCommand(interaction: discord.Interaction):
         channel = interaction.user.voice.channel
         await channel.connect()
         await interaction.response.send_message("Joined!")
-
+#NowPlayingCommand -  Show the currently playing song
 async def NowPlayingCommand(interaction: discord.Interaction, client):
     logs.info(f"Now Playing command was called! by: {interaction.user}")
     await interaction.response.send_message("Thinking...")
@@ -628,3 +649,5 @@ async def NowPlayingCommand(interaction: discord.Interaction, client):
         await embeds.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
     else:
         await interaction.followup.send("we aren't playing anything!")
+
+#/Commands
