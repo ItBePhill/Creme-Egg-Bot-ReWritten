@@ -1,2 +1,2 @@
 import platform
-print(platform.platform(True))
+print(platform.platform(True, True))
