@@ -17,7 +17,6 @@ import yt_dlp as youtube_dl
 import spotipy
 from spotipy import SpotifyClientCredentials
 from database import *
-import googleapiclient.discovery
 #/Imports
 #Startup
 logs.info("Music Module Started Successfully!")
