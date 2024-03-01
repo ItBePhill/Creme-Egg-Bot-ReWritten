@@ -140,7 +140,6 @@ ytdl_format_options_no_down_playlist = {
     'nocheckcertificate': True,
     'ignoreerrors': False,
     'logtostderr': False,
-    'verbose': True,
     'quiet': True,
     'no_warnings': True,
     'default_search': 'auto',
