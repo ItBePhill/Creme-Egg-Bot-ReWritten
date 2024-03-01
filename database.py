@@ -2,7 +2,8 @@ import sqlite3 as sql
 import time
 import os
 import logs
-class db():
+class song():
+    @classmethod
     def DB(self, title):
         connection = sql.connect("songs.db")
         cursor = connection.cursor()
@@ -22,9 +23,7 @@ class db():
         else:
             logs.info(f"Found {title}")
             return self.update(self, title, index, connection, cursor)
-
-
-    
+    @classmethod
     def add(self, song):
         connection = sql.connect("songs.db")
         cursor = connection.cursor()
@@ -40,7 +39,7 @@ class db():
         logs.info("Successfully added song... closing the database")
         connection.commit()
         connection.close()
-
+    @classmethod
     def update(self, song, index, connection: sql.Connection, cursor: sql.Cursor):
         timesplayed = cursor.execute('SELECT "times_played" FROM SONGS WHERE "id" = ?', [int(index)])
         timesplayed2 = []
@@ -72,6 +71,14 @@ class db():
                 "dur": record[6],
             }
             return endsong
-            
+    @classmethod
     def load(self):
         logs.info("Loading the database")
+class playlist():
+    """
+    TODO:
+    Make database and check if a playlist is cached
+    """
+    @classmethod
+    def DB(self, title):
+        pass
