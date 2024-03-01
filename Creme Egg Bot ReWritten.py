@@ -19,7 +19,7 @@ def runbot():
       r.close()
 
     client.run(TOKEN)
-#Discord Crap
+#Discord Crapb
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
@@ -27,7 +27,7 @@ tree = app_commands.CommandTree(client)
 @client.event
 async def on_ready():
     await tree.sync(guild=discord.Object(id=1014812996226256927))
-    if platform.platform() == "Windows":
+    if "Windows" in platform.platform(True, True):
       await client.get_channel(1105906381552369725).send(f"Connected!")
     else:
       await client.get_channel(1109167764981174343).send(f"Connected!")

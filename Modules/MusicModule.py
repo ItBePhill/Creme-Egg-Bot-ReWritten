@@ -17,6 +17,7 @@ import yt_dlp as youtube_dl
 import spotipy
 from spotipy import SpotifyClientCredentials
 from database import *
+import googleapiclient.discovery
 #/Imports
 #Startup
 logs.info("Music Module Started Successfully!")
@@ -119,7 +120,7 @@ ytdl_format_options = {
     'embedthumbnail': True,
     'concurrent-fragments': 2,
     'paths': {'home': f"{os.getcwd()}//Songs", 'thumbnail': 'Images/Videos'}
-}
+}   
 ytdl_format_options_no_down = {
     'format': 'bestaudio/best',
     'restrictfilenames': True,
@@ -134,6 +135,21 @@ ytdl_format_options_no_down = {
     'source_address': '0.0.0.0',
     'skip-download' : True,
 }
+ytdl_format_options_no_down_playlist = {
+    'format': 'bestaudio/best',
+    'restrictfilenames': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'verbose': True,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'source_address': '0.0.0.0',
+    'skip-download' : True,
+    'flat-playlist' : True,
+}
 
 ffmpeg_options = {
     'options': '-vn'
@@ -142,6 +158,7 @@ ffmpeg_options = {
 #functions for downloading and getting a song
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 ytdl_no_down = youtube_dl.YoutubeDL(ytdl_format_options_no_down)
+ytdl_no_down_playlist = youtube_dl.YoutubeDL(ytdl_format_options_no_down_playlist)
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
         super().__init__(source, volume)
@@ -163,7 +180,15 @@ class YTDLSource(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, lambda: ytdl_no_down.extract_info(url, download=False))
         if 'entries' in data:
             data = data['entries'][0]
+        # logs.info(data['entries'])
         return data
+    @classmethod
+    async def from_url_without_download_playlist(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl_no_down_playlist.extract_info(url, download=False))
+        if 'entries' in data:
+            return data['entries']
+        # logs.info(data['entries'])
 #/Youtube DL Stuff
 
 #Player and Related
@@ -188,20 +213,14 @@ class Player():
         self.paused = False
         g.variables["nowplaying"] = queue[0]
         logs.info("Player Started!")
-        timelapsed = 0
-        stopped = False
-        filename = queue[0]["filename"]
-        dur = queue[0]["dur"]
-        title = queue[0]["title"]
-        author = queue[0]["author"]
-        url = queue[0]["url"]
         voiceclient: discord.VoiceClient = client.voice_clients[0]
         self.voiceclient = voiceclient
         if voiceclient.is_playing():
+            await embeds.CreateEmbedAdded(interaction, queue[-1])
             return queue
         await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = queue[0]["title"], state = f"🎵{queue[0]['title']} || {queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
         await embeds.CreateEmbedPlaying(interaction, queue[0], True)
-        voiceclient.play(discord.FFmpegPCMAudio(source=filename))
+        voiceclient.play(discord.FFmpegPCMAudio(source=queue[0]["filename"]))
         voiceclient.source = discord.PCMVolumeTransformer(voiceclient.source, volume = 0.3)
         logs.info("Creating task and waiting")
         waitask = None
@@ -282,7 +301,7 @@ class Player():
 #/Player and Related
         
 #Commands
-        
+
 #PlayCommand - Takes a Query, and plays it on discord
 async def PlayCommand(interaction: discord.Interaction, query: str, client: discord.Client):
     #Prepare for downloading a playlist
@@ -304,16 +323,17 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
 
     #youtube -  donwload a youtube link and return the filename
     async def youtube(interaction: discord.Interaction, query: str):
-        if "playlist" in query:
-            logs.info("Found A Playlist")
-        songs = await Down(interaction, [query], 0)
+        songs = await Down(interaction, [f'https://www.youtube.com/watch?v={data["id"]}'], 0)
         return songs
     #spotify -  Search for the song on spotify and get the name and artist and search for it on youtube and return the filename
     async def spotify(interaction: discord.Interaction, query: str):
+        await interaction.edit_original_response(content="Looking for the Song on Spotify...")
         with open("key.txt", "r") as r:
             keys = r.readlines()
-            client_secret = keys[1]
-            client_id = keys[2]
+            client_secret = str(keys[1]).removesuffix("\n")
+            client_id = str(keys[2]).removesuffix("\n")
+            print(client_id)
+            print(client_secret)
             r.close()
             spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
             track = spotify.track(query)
@@ -327,9 +347,11 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                     logs.info(i["name"])
                     artists += f", {i['name']}"
                 first = False
-            ytlink = f"{track['name']} by {artists}"     
-            r.close()
-            return ytlink
+        await interaction.edit_original_response(content=f"Found! {track['name']} by {artists}")
+        logs.info(f"Found! {track['name']} by {artists}")
+        ytlink = f"{track['name']} by {artists}"
+        logs.info(ytlink)
+        return [ytlink]
     
 
     logs.info(f"Play command was called! by: {interaction.user}, with Query: {query}")
@@ -339,144 +361,60 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         channel = interaction.user.voice.channel
         await interaction.edit_original_response(content="Joining the voice channel..")
         await channel.connect(self_deaf=True)
-    if "spotify" in query:
+    if "open.spotify" in query:
             file = None
             files = await spotify(interaction, query)
             file = files[0]
             query = file
-    data = await YTDLSource.from_url_without_download(query)
-    logs.info(data)
-    result = db.DB(db, data["title"])
-    if result == None:
-        await interaction.edit_original_response(content =  "Didn't find song, Downloading the song...")
-        files = await youtube(interaction, query)
-        file = files[0]
-        song = {
-            "filename": file,
-            "title": data["title"],
-            "url": f'https://www.youtube.com/watch?v={data["id"]}',
-            "author" : data['channel'],
-            "coverart": "",
-            "user": interaction.user,
-            "dur": data['duration'],
-            "id": len(queue),
-            "userfile": False,
-        }
-        if os.path.exists(f"{os.getcwd()}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
-        else:
+    await interaction.edit_original_response(content=f"Searching for the song on Youtube...")
+    if "playlist" in query:
+            await interaction.edit_original_response(content=f"Found A Playlist!")
+            logs.info("Found A Playlist")
+            entries = await YTDLSource.from_url_without_download_playlist(query)
+
+
             
-             song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
-        db.add(db, song)
     else:
-        await interaction.edit_original_response(content =  "Found the song, using cached song")
-        song = {
-            "filename": result['filename'],
-            "title": result["title"],
-            "url": result['url'],
-            "author" : result['author'],
-            "coverart": result['coverart'],
-            "user": interaction.user,
-            "dur": result['dur'],
-            "id": len(queue),
-            "userfile": False,
-        }
-    await interaction.edit_original_response(content = "Adding to the queue...")
-    queue.append(song)
-    await embeds.CreateEmbedAdded(interaction, song)
-    await Player.player(interaction, client)
-#PlayFileCommand -  Play a file provided by the user
-async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attachment, client):
-
-    logs.info(f"Play File command was called! by: {interaction.user}, with Query: {file}")
-    await interaction.response.send_message("Thinking...")
-    if client.voice_clients == []:
-         # connect to the channel the user is in
-        channel = interaction.user.voice.channel
-        await interaction.edit_original_response(content="Joining the voice channel..")
-        await channel.connect(self_deaf=True)
-
-    url = file
-    await interaction.channel.send(str(file).split("//")[6].split("?")[0])
-    file_name = f"{os.getcwd()}//Songs/{str(file).split('//')[6].split('?')[0]}"
-    if not os.path.exists(file_name):
-        res = requests.get(url, stream = True)
-        if res.status_code == 200:
-            with open(file_name,'wb') as f:
-                shutil.copyfileobj(res.raw, f)
-            logs.info('Song sucessfully Downloaded: ',file_name, 'from: ', file)
+        data = await YTDLSource.from_url_without_download(query)
+        logs.info(data)
+        await interaction.edit_original_response(content=f"Found! {data['title']} by {data['channel']}")
+        result = song.DB(data["title"])
+        if result == None:
+            await interaction.edit_original_response(content =  "Didn't find song, Downloading the song...")
+            files = await youtube(interaction, query)
+            file = files[0]
+            song = {
+                "filename": file,
+                "title": data["title"],
+                "url": f'https://www.youtube.com/watch?v={data["id"]}',
+                "author" : data['channel'],
+                "coverart": "",
+                "user": interaction.user,
+                "dur": data['duration'],
+                "id": len(queue),
+                "userfile": False,
+            }
+            if os.path.exists(f"{os.getcwd()}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"):
+                song["coverart"] = f"{os.getcwd()}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
+            else:
+                    song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
+            song.add(song, song)
         else:
-            logs.info("Song Couldn't be retrieved")
-
-        await interaction.edit_original_response(content = f"Successfully Downloaded: {file_name.split('/')[1]}")
-    
-    else:
-        await interaction.edit_original_response(content = f"Song Already Downloaded: {file_name.split('/')[1]}")
-    logs.info(f"Adding: {file_name} to the queue")
-    filextension = os.path.splitext(os.path.basename(file_name))[1].split(".")[1]
-    logs.info(f"Found: {filextension}")
-    song = {
-        "filename": file_name,
-        "title": "",
-        "url": str(url),
-        "author" : "",
-        "coverart": "",
-        "user": None,
-        "dur": 0.0,
-        "id": len(queue),
-        "userfile": True,
-    }
-    try:
-        audio = mutagen.File(file_name, None, True)
-        song["title"] = audio["title"][0]
-        song["author"] = audio["artist"][0]
-        song['user'] = interaction.user
-        
-        with audioread.audio_open(file_name) as f:
-            song["dur"] = f.duration
-
-    except Exception as e:
-        logs.info(e)
-        with audioread.audio_open(file_name) as f:
-            song["dur"] = f.duration
-        song["title"] = file_name
-        song["author"] = "various artists"
-        song["user"] = interaction.user
-    if filextension == "flac":
-        try:
-            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
-        except:
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
-    if filextension == "mp3":
-        try:
-            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
-        except:
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
-    if filextension == "mp4":
-        try:
-            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
-        except:
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
-    if filextension == "m4a":
-        try:
-            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
-                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
-        except:
-            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
-    else:
-        song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
-
-    logs.info(song)
-    queue.append(song)
-    await embeds.CreateEmbedAdded(interaction, song)
-    await Player.player(interaction, client)
+            await interaction.edit_original_response(content =  "Found the song, using cached song")
+            song = {
+                "filename": result['filename'],
+                "title": result["title"],
+                "url": result['url'],
+                "author" : result['author'],
+                "coverart": result['coverart'],
+                "user": interaction.user,
+                "dur": result['dur'],
+                "id": len(queue),
+                "userfile": False,
+            }
+        await interaction.edit_original_response(content = "Adding the song to the queue...")
+        queue.append(song)
+        await Player.player(interaction, client)
 
 page = 0
 #QueueCommand - Get and show the queue, in a nice format
@@ -649,5 +587,98 @@ async def NowPlayingCommand(interaction: discord.Interaction, client):
         await embeds.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
     else:
         await interaction.followup.send("we aren't playing anything!")
+
+#PlayFileCommand -  Play a file provided by the user
+async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attachment, client):
+
+    logs.info(f"Play File command was called! by: {interaction.user}, with Query: {file}")
+    await interaction.response.send_message("Thinking...")
+    if client.voice_clients == []:
+         # connect to the channel the user is in
+        channel = interaction.user.voice.channel
+        await interaction.edit_original_response(content="Joining the voice channel..")
+        await channel.connect(self_deaf=True)
+
+    url = file
+    await interaction.channel.send(str(file).split("//")[6].split("?")[0])
+    file_name = f"{os.getcwd()}//Songs/{str(file).split('//')[6].split('?')[0]}"
+    if not os.path.exists(file_name):
+        res = requests.get(url, stream = True)
+        if res.status_code == 200:
+            with open(file_name,'wb') as f:
+                shutil.copyfileobj(res.raw, f)
+            logs.info('Song sucessfully Downloaded: ',file_name, 'from: ', file)
+        else:
+            logs.info("Song Couldn't be retrieved")
+
+        await interaction.edit_original_response(content = f"Successfully Downloaded: {file_name.split('/')[1]}")
+    
+    else:
+        await interaction.edit_original_response(content = f"Song Already Downloaded: {file_name.split('/')[1]}")
+    logs.info(f"Adding: {file_name} to the queue")
+    filextension = os.path.splitext(os.path.basename(file_name))[1].split(".")[1]
+    logs.info(f"Found: {filextension}")
+    song = {
+        "filename": file_name,
+        "title": "",
+        "url": str(url),
+        "author" : "",
+        "coverart": "",
+        "user": None,
+        "dur": 0.0,
+        "id": len(queue),
+        "userfile": True,
+    }
+    try:
+        audio = mutagen.File(file_name, None, True)
+        song["title"] = audio["title"][0]
+        song["author"] = audio["artist"][0]
+        song['user'] = interaction.user
+        
+        with audioread.audio_open(file_name) as f:
+            song["dur"] = f.duration
+
+    except Exception as e:
+        logs.info(e)
+        with audioread.audio_open(file_name) as f:
+            song["dur"] = f.duration
+        song["title"] = file_name
+        song["author"] = "various artists"
+        song["user"] = interaction.user
+    if filextension == "flac":
+        try:
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
+        except:
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
+    if filextension == "mp3":
+        try:
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
+        except:
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
+    if filextension == "mp4":
+        try:
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
+        except:
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
+    if filextension == "m4a":
+        try:
+            if not os.path.exists(f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"):
+                subprocess.check_output(f'ffmpeg -i {file_name} -an "{os.getcwd()}//Songs//Images//{song["title"]} cover.jpg" ', shell=True)
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//{song['title']} cover.jpg"
+        except:
+            song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
+    else:
+        song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
+
+    logs.info(song)
+    queue.append(song)
+    await embeds.CreateEmbedAdded(interaction, song)
+    await Player.player(interaction, client)
 
 #/Commands
