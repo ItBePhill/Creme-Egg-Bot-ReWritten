@@ -139,5 +139,5 @@ if CremeModules.MusicModule.enabled == True:
   async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attachment):
     await CremeModules.MusicModule.PlayFileCommand(interaction, file,  client)
 
-  # if not "Linux" in platform.platform(True, True):
-  #   runbot()
+if not "Linux" in platform.platform(True, True):
+  runbot()
