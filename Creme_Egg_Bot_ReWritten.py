@@ -10,19 +10,17 @@ import platform
 #-------------------------------------------------
 
 #Initialisation-----------------------------------
-logs.info("Starting The Bot")
 #Function that starts the bot
-def runbot():
-    with open("key.txt", "r") as r:
-      TOKEN = r.readlines()[0]
-      
-      r.close()
-
-    client.run(TOKEN)
 #Discord Crapb
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
+def runbot():
+    with open("key.txt", "r") as r:
+      TOKEN = r.readlines()[0]
+      r.close()
+    logs.info("\n\nStarting The Bot")
+    client.run(TOKEN)
 #-------------------------------------------------
 @client.event
 async def on_ready():
@@ -141,4 +139,5 @@ if CremeModules.MusicModule.enabled == True:
   async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attachment):
     await CremeModules.MusicModule.PlayFileCommand(interaction, file,  client)
 
-runbot()
+if not "Linux" in platform.platform(True, True):
+  runbot()
