@@ -5,22 +5,27 @@ from discord import app_commands
 import yt_dlp as youtube_dl
 import os
 import logs
-import CremeModules
 import platform
+import CremeModules
+import multiprocessing as mp
 #-------------------------------------------------
 
 #Initialisation-----------------------------------
 #Function that starts the bot
-#Discord Crapb
+#Discord Crap
+botprocess: mp.Process = None
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
-def runbot():
+def runbot(process):
+    global botprocess
+    botprocess = process
     with open("key.txt", "r") as r:
       TOKEN = r.readlines()[0]
       r.close()
     logs.info("\n\nStarting The Bot")
     client.run(TOKEN)
+    return botprocess
 #-------------------------------------------------
 @client.event
 async def on_ready():
@@ -45,7 +50,7 @@ async def update(interaction: discord.Interaction):
 @tree.command(name = "restart-bot", description="Restart the bot", guild = discord.Object(id=1014812996226256927))
 async def update(interaction: discord.Interaction):
   await interaction.response.defer()
-  await CremeModules.Restart(interaction) 
+  await CremeModules.Restart(interaction, botprocess) 
 
 
 
@@ -139,5 +144,5 @@ if CremeModules.MusicModule.enabled == True:
   async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attachment):
     await CremeModules.MusicModule.PlayFileCommand(interaction, file,  client)
 
-if not "Linux" in platform.platform(True, True):
-  runbot()
+# if not "Linux" in platform.platform(True, True):
+#   runbot()

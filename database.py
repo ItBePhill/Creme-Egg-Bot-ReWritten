@@ -22,7 +22,7 @@ class song():
             return None
         else:
             logs.info(f"Found {title}")
-            return self.update(self, title, index, connection, cursor)
+            return self.update(title, index, connection, cursor)
     @classmethod
     def add(self, song):
         connection = sql.connect("songs.db")

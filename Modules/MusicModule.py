@@ -16,7 +16,7 @@ import subprocess
 import yt_dlp as youtube_dl
 import spotipy
 from spotipy import SpotifyClientCredentials
-from database import *
+import database as db
 #/Imports
 #Startup
 logs.info("Music Module Started Successfully!")
@@ -241,7 +241,7 @@ class Player():
     #waitforend - Waits for the end of the current song and moves on to the next song, also handles pausing
     @classmethod
     async def waitforend(self, interaction, queue):
-        while g.variables["timelapsed"] != queue[0]["dur"]:
+        while g.variables["timelapsed"] < queue[0]["dur"]:
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
@@ -374,9 +374,8 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
             
     else:
         data = await YTDLSource.from_url_without_download(query)
-        logs.info(data)
         await interaction.edit_original_response(content=f"Found! {data['title']} by {data['channel']}")
-        result = song.DB(data["title"])
+        result = db.song.DB(data["title"])
         if result == None:
             await interaction.edit_original_response(content =  "Didn't find song, Downloading the song...")
             files = await youtube(interaction, query)
@@ -396,7 +395,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                 song["coverart"] = f"{os.getcwd()}//Songs//Images//Videos//{os.path.splitext(os.path.basename(song['filename']))[0]}.webp"
             else:
                     song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
-            song.add(song, song)
+            db.song.add(song)
         else:
             await interaction.edit_original_response(content =  "Found the song, using cached song")
             song = {
