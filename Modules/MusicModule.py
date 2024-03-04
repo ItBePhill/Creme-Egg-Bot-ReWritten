@@ -76,7 +76,6 @@ class embeds():
         embed.add_field(name="Time until played", value = totaltime)
         file = discord.File(song["coverart"])
         last_message: discord.Message = await message.edit(content = None, attachments = [file], embed = None)
-        # (message_id = message.id, content = "Thinking...", attachments = [file])
         embed.set_image(url = last_message.attachments[0])
         embed.set_footer(text = f"Requested By: {song['user']}")
         embed.timestamp = datetime.datetime.now()
@@ -241,7 +240,10 @@ class Player():
     #waitforend - Waits for the end of the current song and moves on to the next song, also handles pausing
     @classmethod
     async def waitforend(self, interaction, queue):
-        while g.variables["timelapsed"] < queue[0]["dur"]:
+        logs.info(g.variables["timelapsed"])
+        logs.info(queue[0]["dur"])
+        while g.variables["timelapsed"] <= queue[0]["dur"]:
+            print(f"Time Elapsed: {g.variables['timelapsed']} / {queue[0]['dur']}", end="\r")
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
@@ -369,9 +371,6 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
             await interaction.edit_original_response(content=f"Found A Playlist!")
             logs.info("Found A Playlist")
             entries = await YTDLSource.from_url_without_download_playlist(query)
-
-
-            
     else:
         data = await YTDLSource.from_url_without_download(query)
         await interaction.edit_original_response(content=f"Found! {data['title']} by {data['channel']}")
