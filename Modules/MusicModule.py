@@ -209,7 +209,7 @@ class Player():
         global queue, first
         self.paused = False
         g.variables["nowplaying"] = queue[0]
-        f.variables["timelapsed"]
+        g.variables["timelapsed"]
         logs.info("Player Started!")
         voiceclient: discord.VoiceClient = client.voice_clients[0]
         self.voiceclient = voiceclient
