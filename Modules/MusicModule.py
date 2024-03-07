@@ -208,6 +208,7 @@ class Player():
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         global queue, first
         self.paused = False
+        self.client = client
         g.variables["nowplaying"] = queue[0]
         g.variables["timelapsed"]
         logs.info("Player Started!")
@@ -264,6 +265,9 @@ class Player():
         self.voiceclient.stop()
         queue = []
         self.thread.cancel()
+        await self.voiceclient.disconnect()
+        await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
+
         return queue
     #stop - stops the currently playing song and removes it from the queue before starting the player again
     @classmethod
