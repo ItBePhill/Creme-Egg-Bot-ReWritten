@@ -2,7 +2,6 @@ import logs
 import multiprocessing
 import time
 from colorama import init, Fore
-init()
 def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
     runbot(process)
@@ -17,11 +16,8 @@ if __name__ == "__main__":
                                 |___/|___/                                                         
                              
     \n""")
-    botprocess.start()
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}")
+    botprocess.start()
+
     while True:
-        time.sleep(0.5)
-        if botprocess.is_alive:
-            continue
-        else:
-            botprocess.start()
+        continue

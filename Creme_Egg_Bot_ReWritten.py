@@ -20,7 +20,7 @@ tree = app_commands.CommandTree(client)
 def runbot(process):
     global botprocess
     botprocess = process
-    with open("key.txt", "r") as r:
+    with open(f"{os.getcwd()}/key.txt", "r") as r:
       TOKEN = r.readlines()[0]
       r.close()
     logs.info("\n\nStarting The Bot")
@@ -54,10 +54,11 @@ async def update(interaction: discord.Interaction):
 
 
 
-# @tree.command(name = "test_command", description="Test Command Please Ignore", guild = discord.Object(id=1014812996226256927))
-# async def testcommand(interaction: discord.Interaction):
-#   pass            
-
+@tree.command(name = "test_command", description="Test Command Please Ignore", guild = discord.Object(id=1014812996226256927))
+async def testcommand(interaction: discord.Interaction):
+  await interaction.response.send_message("Test Command")
+  await interaction.followup.send(await CremeModules.MusicModule.get_info_youtube("https://www.youtube.com/watch?v=mZD6xxq-eyI"))
+  
 
 if CremeModules.BaseModule.enabled == True:
   @tree.command(name="roll", description="Generate a random number from the min and max", guild = discord.Object(id=1014812996226256927))
