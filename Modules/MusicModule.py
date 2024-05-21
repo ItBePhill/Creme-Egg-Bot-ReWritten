@@ -368,7 +368,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
         await interaction.edit_original_response(content=f"Found! {data['title']} by {data['channel']}")
         result = db.song.DB(data["title"])
         if result == None:
-            await interaction.edit_original_response(content = "Didn't find song, Downloading the song...")
+            await interaction.edit_original_response(content = "Song not cached, Downloading the song...")
             files = await youtube(interaction, query)
             file = files[0]
             song = {
@@ -609,11 +609,6 @@ async def JoinCommand(interaction: discord.Interaction):
 async def NowPlayingCommand(interaction: discord.Interaction, client: discord.Client):
     logs.info(f"Now Playing command was called! by: {interaction.user}")
     await interaction.response.send_message("Thinking...")
-    voiceclient: discord.VoiceClient = client.voice_clients[0]
-    if not voiceclient.is_playing():
-        await embeds.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
-    else:
-        await interaction.followup.send("we aren't playing anything!")
 
 
 
@@ -724,15 +719,13 @@ async def get_info_ytdlp(url):
 async def get_info_youtube(url):
     import pprint
     from googleapiclient.discovery import build
-    url =  url.split("&t")[0]
-    print(url)
     api_key = None
     with open(f"{os.getcwd()}\key.txt", "r") as f:
         api_key = f.readlines()[3]
     youtube = build('youtube', 'v3', developerKey=api_key)
     request = youtube.search().list(q=url,part='snippet',type='video')
     response = request.execute()
-    return response["items"]
+    print(response['items'])
 
 
 #/Commands

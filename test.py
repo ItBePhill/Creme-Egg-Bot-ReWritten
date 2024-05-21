@@ -1,36 +1,34 @@
 from googleapiclient.discovery import build
 import isodate
-import os
-def run(url):
-    url =  url.split("&t")[0]
-    print(url)
-    api_key = None
-    with open(f"{os.getcwd()}\key.txt", "r") as f:
-        api_key = f.readlines()[3]
-    youtube = build('youtube', 'v3', developerKey=api_key)
-    request = youtube.search().list(q=url,part='snippet,contentDetails',type='video')
-    response = request.execute()
-    return response['items']
-
-
-
-url = "https://www.youtube.com/watch?v=sWtEYPva4A0&t=2086s"
-url1 = "Relaxing Zelda Music with Campfire Ambience"
-
-data = run(url)
-
-data1 = run(url1)
-
 import pprint
-
-
 pp = pprint.PrettyPrinter()
+from googleapiclient.discovery import build
+song = {
+    "Title": None,
+    "Channel": None,
+    "Duration": None,
+    "Thumbnail": None,
+    "URL": None
+}
+api_key = open("key.txt", "r").readlines()[3]
+youtube = build('youtube', 'v3', developerKey=api_key)
 
-title = data[0]["snippet"]["title"]
-author = data[0]["snippet"]["channelTitle"]
-id = data[0]["id"]["videoId"]
-pp.pprint(data[0])
-pp.pprint("-")
-pp.pprint("-")
-pp.pprint("-")
-pp.pprint(data1[0])
+request = youtube.search().list(
+    q="The Summoning Sleep Token",
+    part="id",
+    type="video"
+)
+response = request.execute()
+print(response["items"][0]["id"]["videoId"])
+request2 = youtube.videos().list(
+    id=response["items"][0]["id"]["videoId"],
+    part="snippet,contentDetails"
+)
+response2 = request2.execute()
+song["Title"] = response2['snippet']['title']
+song["Channel"] = response2['snippet']['channelTitle']
+song["Thumbnail"] = response2['snippet']['thumbnails']['default']['url']
+song["Duration"] = response2['contentDetails']['duration']
+song["URL"] = f"https://www.youtube.com/watch?v={response2['id']}"
+
+pp.pprint(song)
