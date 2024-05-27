@@ -28,7 +28,6 @@ first = True
 genericthumburl = "https://raw.githubusercontent.com/ItBePhill/Creme-Egg-Bot-ReWritten/main/Songs/Images/generic-thumb.png"
 #/Startup
 
-
 #Embeds
 class embeds():
     #Create the "Playing" Embed, has a variation for Now Playing and Started Playing
@@ -69,7 +68,6 @@ class embeds():
         embed.set_image(url = song["coverart"])
         embed.set_footer(text = f"Requested By: {song['user']}", icon_url=song["user"].avatar.url)
         embed.timestamp = datetime.datetime.now()
-
         view = discord.ui.View()
         shuffleButton = discord.ui.Button(emoji="🔀")
         shuffleButton.callback=lambda i: callback(i, "sh", interaction)
