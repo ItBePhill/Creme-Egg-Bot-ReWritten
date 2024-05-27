@@ -28,6 +28,7 @@ first = True
 genericthumburl = "https://raw.githubusercontent.com/ItBePhill/Creme-Egg-Bot-ReWritten/main/Songs/Images/generic-thumb.png"
 #/Startup
 
+
 #Embeds
 class embeds():
     #Create the "Playing" Embed, has a variation for Now Playing and Started Playing
