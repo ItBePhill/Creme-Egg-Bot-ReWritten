@@ -33,8 +33,25 @@ class embeds():
     #Create the "Playing" Embed, has a variation for Now Playing and Started Playing
     @classmethod
     async def CreateEmbedPlaying(self, interaction: discord.Interaction, song: list, started: bool):
-        message: discord.Message = await interaction.channel.send(content = "Thinking...")
-
+        async def callback(i: discord.Interaction, x: str, ii: discord.Interaction):
+            await i.response.send_message(content =  "Thinking...", ephemeral=True)
+            await i.delete_original_response()
+            match x:
+                case "sh":
+                    await ShuffleCommand(i)
+                case "sk":
+                    await Player.skip(i, Player.client)
+                case "p":
+                    if Player.paused:
+                        await Player.resume()
+                    else:
+                        await Player.pause()
+                case "r":
+                    await Player.restart(i, Player.client)
+                case "st":
+                    await Player.stop()
+                    
+        await interaction.channel.send(content = "Thinking...")
         if started:
             title = f"Started Playing: {song['title']}"
         else:
@@ -42,25 +59,44 @@ class embeds():
         embed = discord.Embed(title = title)
         embed.colour = discord.Colour.red()
         embed.add_field(name = "Title", value = song["title"])
-        embed.add_field(name = "Author", value = song["author"])
+        embed.add_field(name = "Channel", value = song["author"])
         embed.add_field(name = "Duration", value = str(datetime.timedelta(seconds=song["dur"])))
         embed.add_field(name = "URL", value = song["url"])
         if not started:
-            embed.add_field(name = "Time Elapsed", value = g.variables["timelapsed"])
+            embed.add_field(name = "Time Elapsed", value = datetime.timedelta(seconds=g.variables["timelapsed"]))
+            embed.add_field(name= "Time Left", value = datetime.timedelta(seconds=song["dur"] - g.variables["timelapsed"]))
         embed.set_image(url = song["coverart"])
-        embed.set_footer(text = f"Requested By: {song['user']}")
+        embed.set_footer(text = f"Requested By: {song['user']}", icon_url=song["user"].avatar.url)
         embed.timestamp = datetime.datetime.now()
-        await interaction.channel.send(content = None, embed = embed, file = None)
+
+        view = discord.ui.View()
+        shuffleButton = discord.ui.Button(emoji="🔀")
+        shuffleButton.callback=lambda i: callback(i, "sh", interaction)
+        pausePlayButton = discord.ui.Button(emoji="▶️")
+        pausePlayButton.callback=lambda i: callback(i, "p", interaction)
+        restartButton = discord.ui.Button(emoji="🔁")
+        restartButton.callback=lambda i: callback(i, "r", interaction)
+        skipButton = discord.ui.Button(emoji="➡️")
+        skipButton.callback = lambda i: callback(i, "sk", interaction)
+        stopButton = discord.ui.Button(emoji="⏹️")
+        stopButton.callback = lambda i: callback(i, "st", interaction)
+        view.add_item(shuffleButton)
+        view.add_item(pausePlayButton)
+        view.add_item(restartButton)
+        view.add_item(skipButton)
+        view.add_item(stopButton)
+        await interaction.channel.send(content = None, embed = embed, file = None, view=view)
+        
 
     # Create Embed for Addition / Info about a song
     @classmethod
     async def CreateEmbedAdded(self, interaction: discord.Interaction, song): 
-        message = await interaction.channel.send("Thinking...")
+        await interaction.channel.send("Thinking...")
         embed = discord.Embed(title = song["title"])
         embed.colour = discord.Colour.red()
         embed.add_field(name = "Position", value = str(song["id"]))
         embed.add_field(name = "Title", value = song["title"])
-        embed.add_field(name = "Author", value = song["author"])
+        embed.add_field(name = "Channel", value = song["author"])
         embed.add_field(name = "Duration", value = str(datetime.timedelta(seconds=song["dur"])))
         embed.add_field(name = "URL", value = song["url"])
         total = 0
@@ -74,8 +110,10 @@ class embeds():
         totaltime = datetime.timedelta(seconds=timel)
         embed.add_field(name="Time until played", value = totaltime)
         embed.set_image(url = song["coverart"])
-        embed.set_footer(text = f"Requested By: {song['user']}")
+        embed.set_footer(text = f"Requested By: {song['user']}", icon_url=song["user"].avatar.url)
         embed.timestamp = datetime.datetime.now()
+        
+
         await interaction.channel.send(content = None, embed = embed, file = None)
 #/Embeds
         
@@ -181,26 +219,28 @@ class Player():
     @classmethod
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         global queue, first
-        self.paused = False
         self.client = client
-        g.variables["nowplaying"] = queue[0]
-        g.variables["timelapsed"]
-        logs.info("Player Started!")
         voiceclient: discord.VoiceClient = client.voice_clients[0]
         self.voiceclient = voiceclient
         if voiceclient.is_playing():
             await embeds.CreateEmbedAdded(interaction, queue[-1])
             return queue
+        self.paused = False
+        self.playing = True
+        g.variables["nowplaying"] = queue[0]
+        g.variables["timelapsed"] = 0
+        logs.info("Player Started!")
         await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = queue[0]["title"], state = f"🎵{queue[0]['title']} || {queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
         await embeds.CreateEmbedPlaying(interaction, queue[0], True)
-        voiceclient.play(discord.FFmpegPCMAudio(source=queue[0]["filename"]))
-        voiceclient.source = discord.PCMVolumeTransformer(voiceclient.source, volume = 0.3)
-        logs.info("Creating task and waiting")
         waitask = None
         waitask = asyncio.create_task(coro = self.waitforend(interaction, queue), name = "Wait Task")
         self.thread = waitask
+        voiceclient.play(discord.FFmpegPCMAudio(source=queue[0]["filename"]))
         await asyncio.wait([waitask])
         queue = waitask.result()
+        voiceclient.source = discord.PCMVolumeTransformer(voiceclient.source, volume = 0.3)
+        logs.info("Creating task and waiting")
+        
         await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
         if queue != []:
             logs.info("Queue not empty moving on to next song")
@@ -209,9 +249,10 @@ class Player():
             await Player.player(interaction, client)
             return queue, first
         else:
-            await interaction.channel.send("Reached the end of the queue!")
+            await interaction.channel.send("Reached the end of the queue!\nuse /play to add more!")
             await voiceclient.disconnect()
             logs.info("Queue empty exiting player")
+            self.playing = False
             return queue, first
         
     #waitforend - Waits for the end of the current song and moves on to the next song, also handles pausing
@@ -224,6 +265,7 @@ class Player():
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
+
         if queue[0]["userfile"]:
             os.remove(queue[0]["filename"])
             if queue[0]["coverart"] != f"{os.getcwd()}//Songs//Images//generic-thumb.png":
@@ -377,6 +419,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                 "url": f'https://www.youtube.com/watch?v={data["id"]}',
                 "author" : data['channel'],
                 "coverart": "",
+                "channelart": "",
                 "user": interaction.user,
                 "dur": data['duration'],
                 "id": len(queue),
@@ -386,6 +429,10 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                 song["coverart"] = data["thumbnail"]
             except:
                 song["coverart"] = genericthumburl
+            # try:
+            #     song["channelart"] = data[""]
+            # except:
+            #     song["channelart"] = genericthumburl
             db.song.add(song)
         else:
             await interaction.edit_original_response(content =  "Found the song, using cached song")
@@ -428,7 +475,7 @@ async def QueueCommand(interaction: discord.Interaction):
 
             embed = discord.Embed(title=f"Queue Page: {page+1} / {len(temptemp)}")
             for i in temptemp[page]:
-                embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nAuthor: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
+                embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nChannel: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
             totalp = 0
             totalq = 0
             for i in temptemp[page]:
@@ -465,7 +512,7 @@ async def QueueCommand(interaction: discord.Interaction):
         for i in temptemp:
             logs.info(i)
         for i in temptemp[page]:
-            embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nAuthor: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
+            embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nChannel: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
         totalp = 0
         totalq = 0
         for i in temptemp[page]:
@@ -609,6 +656,9 @@ async def JoinCommand(interaction: discord.Interaction):
 async def NowPlayingCommand(interaction: discord.Interaction, client: discord.Client):
     logs.info(f"Now Playing command was called! by: {interaction.user}")
     await interaction.response.send_message("Thinking...")
+    if Player.playing:
+        await embeds.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
+
 
 
 

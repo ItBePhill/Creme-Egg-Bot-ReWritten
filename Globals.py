@@ -1,4 +1,4 @@
-#Global.py 
+#Globals.py 
 #Written by Phillip Wood
 variables = {}
 def Set(name, value):
