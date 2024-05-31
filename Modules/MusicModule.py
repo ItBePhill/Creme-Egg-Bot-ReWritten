@@ -14,6 +14,7 @@ import Globals as g
 import audioread
 import subprocess
 import yt_dlp as youtube_dl
+import threading
 import spotipy
 from spotipy import SpotifyClientCredentials
 import database as db
@@ -26,6 +27,7 @@ def running():
     return True
 first = True
 genericthumburl = "https://raw.githubusercontent.com/ItBePhill/Creme-Egg-Bot-ReWritten/main/Songs/Images/generic-thumb.png"
+thumbsmall = "https://i.ytimg.com/vi/{_ID_}/default.jpg"
 #/Startup
 
 #Embeds
@@ -57,8 +59,25 @@ class embeds():
         else:
             title = f"Now Playing: {song['title']}"
         embed = discord.Embed(title = title)
-        embed.colour = discord.Colour.red()
+        import urllib.request
+        url = song["url"]
+        id = url.removeprefix("https://www.youtube.com/watch?v=")
+        imgURL = thumbsmall.replace("{_ID_}", id)
+        print(imgURL)
+        print(f"{os.getcwd()}/{id}_small.jpg")
+        try:
+            path = urllib.request.urlretrieve(imgURL, f"{os.getcwd()}/{id}_small.jpg")[0]
+            import colorthief
+            colourthief = colorthief.ColorThief(f"{os.getcwd()}/{id}_small.jpg")
+            dominant_color = colourthief.get_color(quality=1)
+            embed.colour = discord.Colour.from_rgb(dominant_color[0], dominant_color[1], dominant_color[2])
+            os.remove(f"{os.getcwd()}/{id}_small.jpg")
+        except Exception as e:
+            print(e)
+            embed.colour = discord.Colour.red()
         embed.add_field(name = "Title", value = song["title"])
+
+
         embed.add_field(name = "Channel", value = song["author"])
         embed.add_field(name = "Duration", value = str(datetime.timedelta(seconds=song["dur"])))
         embed.add_field(name = "URL", value = song["url"])
@@ -92,7 +111,22 @@ class embeds():
     async def CreateEmbedAdded(self, interaction: discord.Interaction, song): 
         await interaction.channel.send("Thinking...")
         embed = discord.Embed(title = song["title"])
-        embed.colour = discord.Colour.red()
+        import urllib.request
+        url = song["url"]
+        id = url.removeprefix("https://www.youtube.com/watch?v=")
+        imgURL = thumbsmall.replace("{_ID_}", id)
+        print(imgURL)
+        print(f"{os.getcwd()}/{id}_small.jpg")
+        try:
+            path = urllib.request.urlretrieve(imgURL, f"{os.getcwd()}/{id}_small.jpg")[0]
+            import colorthief
+            colourthief = colorthief.ColorThief(f"{os.getcwd()}/{id}_small.jpg")
+            dominant_color = colourthief.get_color(quality=1)
+            embed.colour = discord.Colour.from_rgb(dominant_color[0], dominant_color[1], dominant_color[2])
+            os.remove(f"{os.getcwd()}/{id}_small.jpg")
+        except Exception as e:
+            print(e)
+            embed.colour = discord.Colour.red()
         embed.add_field(name = "Position", value = str(song["id"]))
         embed.add_field(name = "Title", value = song["title"])
         embed.add_field(name = "Channel", value = song["author"])
@@ -217,42 +251,45 @@ class Player():
     #player - plays the music and cycles through the queue
     @classmethod
     async def player(self, interaction: discord.Interaction, client: discord.Client):
+        def play(client: discord.Client):
+            voiceclient = client.voice_clients[0]
+            voiceclient.play(discord.FFmpegPCMAudio(source=queue[0]["filename"]))
+            voiceclient.source = discord.PCMVolumeTransformer(voiceclient.source, volume = 0.3)
         global queue, first
         self.client = client
         voiceclient: discord.VoiceClient = client.voice_clients[0]
         self.voiceclient = voiceclient
-        if voiceclient.is_playing():
+        if voiceclient.is_playing() and not self.paused:
             await embeds.CreateEmbedAdded(interaction, queue[-1])
             return queue
-        self.paused = False
-        self.playing = True
-        g.variables["nowplaying"] = queue[0]
-        g.variables["timelapsed"] = 0
-        logs.info("Player Started!")
-        await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = queue[0]["title"], state = f"🎵{queue[0]['title']} || {queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
-        await embeds.CreateEmbedPlaying(interaction, queue[0], True)
-        waitask = None
-        waitask = asyncio.create_task(coro = self.waitforend(interaction, queue), name = "Wait Task")
-        self.thread = waitask
-        voiceclient.play(discord.FFmpegPCMAudio(source=queue[0]["filename"]))
-        await asyncio.wait([waitask])
-        queue = waitask.result()
-        voiceclient.source = discord.PCMVolumeTransformer(voiceclient.source, volume = 0.3)
-        logs.info("Creating task and waiting")
-        
-        await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
-        if queue != []:
-            logs.info("Queue not empty moving on to next song")
-            g.variables["timelapsed"] = 0
-            await queuereorder()
-            await Player.player(interaction, client)
-            return queue, first
         else:
-            await interaction.channel.send("Reached the end of the queue!\nuse /play to add more!")
-            await voiceclient.disconnect()
-            logs.info("Queue empty exiting player")
-            self.playing = False
-            return queue, first
+            self.paused = False
+            self.playing = True
+            g.variables["nowplaying"] = queue[0]
+            g.variables["timelapsed"] = 0
+            logs.info("Player Started!")
+            await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = queue[0]["title"], state = f"🎵{queue[0]['title']} || {queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
+            await embeds.CreateEmbedPlaying(interaction, queue[0], True)
+            waitask = None
+            waitask = asyncio.create_task(coro = self.waitforend(interaction, queue), name = "Wait Task")
+            self.thread = waitask
+            playthread = threading.Thread(target=play, name="Play Thread", args=[client], daemon=True)
+            playthread.start()
+            await asyncio.wait([waitask])
+            queue = waitask.result()
+            await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
+            if queue != []:
+                logs.info("Queue not empty moving on to next song")
+                g.variables["timelapsed"] = 0
+                await queuereorder()
+                await Player.player(interaction, client)
+                return queue, first
+            else:
+                await interaction.channel.send("Reached the end of the queue!\nuse /play to add more!")
+                await voiceclient.disconnect()
+                logs.info("Queue empty exiting player")
+                self.playing = False
+                return queue, first
         
     #waitforend - Waits for the end of the current song and moves on to the next song, also handles pausing
     @classmethod
@@ -260,7 +297,7 @@ class Player():
         logs.info(g.variables["timelapsed"])
         logs.info(queue[0]["dur"])
         while g.variables["timelapsed"] <= queue[0]["dur"]:
-            print(f"Time Elapsed: {g.variables['timelapsed']} / {queue[0]['dur']}", end="\r")
+            print(f"Time Elapsed: {g.variables['timelapsed']} / {queue[0]['dur']} | Threads: {threading.active_count()}", end="\r")
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
@@ -765,16 +802,7 @@ async def get_info_ytdlp(url):
     response = await YTDLSource.from_url_without_download(url)
     return response
 
-async def get_info_youtube(url):
-    import pprint
-    from googleapiclient.discovery import build
-    api_key = None
-    with open(f"{os.getcwd()}\key.txt", "r") as f:
-        api_key = f.readlines()[3]
-    youtube = build('youtube', 'v3', developerKey=api_key)
-    request = youtube.search().list(q=url,part='snippet',type='video')
-    response = request.execute()
-    print(response['items'])
+
 
 
 #/Commands

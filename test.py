@@ -27,8 +27,8 @@ request2 = youtube.videos().list(
 response2 = request2.execute()
 song["Title"] = response2['snippet']['title']
 song["Channel"] = response2['snippet']['channelTitle']
-song["Thumbnail"] = response2['snippet']['thumbnails']['default']['url']
+song["Thumbnail"] = response2['snippet']['thumbnails']
 song["Duration"] = response2['contentDetails']['duration']
 song["URL"] = f"https://www.youtube.com/watch?v={response2['id']}"
 
-pp.pprint(song)
+pp.pprint(song[""])

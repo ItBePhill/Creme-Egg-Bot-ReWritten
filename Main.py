@@ -16,7 +16,7 @@ if __name__ == "__main__":
                                 |___/|___/                                                         
                              
     \n""")
-    logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}")
+    logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
     botprocess.start()
 
     while True:

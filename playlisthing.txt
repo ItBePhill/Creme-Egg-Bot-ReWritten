@@ -1,0 +1,1 @@
+Songs that are in a playlist are marked as in a playlist and have seperate db for playlist info and the ids of all the songs.
