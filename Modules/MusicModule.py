@@ -30,35 +30,117 @@ genericthumburl = "https://raw.githubusercontent.com/ItBePhill/Creme-Egg-Bot-ReW
 thumbsmall = "https://i.ytimg.com/vi/{_ID_}/default.jpg"
 #/Startup
 
-#Embeds
+#Em
+
+
 class embeds():
+    def __init__(self):
+        self.volabel = None
+        self.volumelabels = [
+            ":black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :red_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :red_square: :red_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :black_large_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :black_large_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :black_large_square: ",
+            ":red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: :red_square: "
+        ]
+        self.ogmessage = None
+        self.embed = None
+        self.view = None
+    async def callback(self, i: discord.Interaction, x: str):
+        await i.response.send_message(content =  "Thinking...", ephemeral=True)
+        await i.delete_original_response()
+        match x:
+            case "sh":
+                await ShuffleCommand(i)
+            case "sk":
+                await Pl.skip(i, Pl.client)
+            case "p":
+                if Pl.paused:
+                    await Pl.resume()
+                    view = discord.ui.View()
+                    embed =  self.embed
+                    shuffleButton = discord.ui.Button(emoji="🔀")
+                    shuffleButton.callback=lambda i: self.callback(i, "sh")
+                    pausePlayButton = discord.ui.Button(emoji="⏸️")
+                    pausePlayButton.callback=lambda i: self.callback(i, "p")
+                    restartButton = discord.ui.Button(emoji="🔁")
+                    restartButton.callback=lambda i: self.callback(i, "r")
+                    skipButton = discord.ui.Button(emoji="⏭️")
+                    skipButton.callback=lambda i: self.callback(i, "sk")
+                    stopButton = discord.ui.Button(emoji="⏹️")
+                    stopButton.callback=lambda i: self.callback(i, "st")
+                    volumeDownButton=discord.ui.Button(emoji="🔉")
+                    volumeDownButton.callback = lambda i: self.callback(i, "vd")
+                    volumeUpButton=discord.ui.Button(emoji="🔊")
+                    volumeUpButton.callback=lambda i: self.callback(i, "vu")
+                    view.add_item(shuffleButton)
+                    view.add_item(pausePlayButton)
+                    view.add_item(restartButton)
+                    view.add_item(skipButton)
+                    view.add_item(stopButton)
+                    view.add_item(volumeUpButton)
+                    view.add_item(volumeDownButton)
+                    await self.ogmessage.edit(embed=embed, view=view)
+                else:
+                    await Pl.pause()
+                    view = discord.ui.View()
+                    embed =  self.embed
+                    shuffleButton = discord.ui.Button(emoji="🔀")
+                    shuffleButton.callback=lambda i: self.callback(i, "sh")
+                    pausePlayButton = discord.ui.Button(emoji="▶️")
+                    pausePlayButton.callback=lambda i: self.callback(i, "p")
+                    restartButton = discord.ui.Button(emoji="🔁")
+                    restartButton.callback=lambda i: self.callback(i, "r")
+                    skipButton = discord.ui.Button(emoji="⏭️")
+                    skipButton.callback=lambda i: self.callback(i, "sk")
+                    stopButton = discord.ui.Button(emoji="⏹️")
+                    stopButton.callback=lambda i: self.callback(i, "st")
+                    volumeDownButton=discord.ui.Button(emoji="🔉")
+                    volumeDownButton.callback = lambda i: self.callback(i, "vd")
+                    volumeUpButton=discord.ui.Button(emoji="🔊")
+                    volumeUpButton.callback=lambda i: self.callback(i, "vu")
+                    view.add_item(shuffleButton)
+                    view.add_item(pausePlayButton)
+                    view.add_item(restartButton)
+                    view.add_item(skipButton)
+                    view.add_item(stopButton)
+                    view.add_item(volumeUpButton)
+                    view.add_item(volumeDownButton)
+                    await self.ogmessage.edit(embed=embed, view=view)
+            case "r":
+                await Pl.restart(i, Pl.client)
+            case "st":
+                await Pl.stop()
+            case "vu":
+                await Pl.volume_up()
+                embed = self.embed
+                view = self.view
+                embed.remove_field(len(embed._fields) - 1)
+                self.embed.add_field(name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
+                await self.ogmessage.edit(embed=embed, view=view)
+            case "vd":
+                await Pl.volume_down()
+                embed = self.embed
+                view = self.view
+                embed.remove_field(len(embed._fields) - 1)
+                self.embed.add_field(name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
+                await self.ogmessage.edit(embed=embed, view=view)
+
     #Create the "Playing" Embed, has a variation for Now Playing and Started Playing
-    @classmethod
-    async def CreateEmbedPlaying(self, interaction: discord.Interaction, song: list, started: bool):
-        async def callback(i: discord.Interaction, x: str, ii: discord.Interaction):
-            await i.response.send_message(content =  "Thinking...", ephemeral=True)
-            await i.delete_original_response()
-            match x:
-                case "sh":
-                    await ShuffleCommand(i)
-                case "sk":
-                    await Player.skip(i, Player.client)
-                case "p":
-                    if Player.paused:
-                        await Player.resume()
-                    else:
-                        await Player.pause()
-                case "r":
-                    await Player.restart(i, Player.client)
-                case "st":
-                    await Player.stop()
+    async def CreateEmbedPlaying(self, interaction: discord.Interaction, song: dict, started: bool):
                     
         await interaction.channel.send(content = "Thinking...")
         if started:
-            title = f"Started Playing: {song['title']}"
+            title = f"Started Playing"
         else:
-            title = f"Now Playing: {song['title']}"
-        embed = discord.Embed(title = title)
+            title = f"Now Playing"
+        self.embed = discord.Embed(title = title, description = f"{song['title']}\n{song['author']}")
         import urllib.request
         url = song["url"]
         id = url.removeprefix("https://www.youtube.com/watch?v=")
@@ -68,49 +150,52 @@ class embeds():
         try:
             path = urllib.request.urlretrieve(imgURL, f"{os.getcwd()}/{id}_small.jpg")[0]
             import colorthief
-            colourthief = colorthief.ColorThief(f"{os.getcwd()}/{id}_small.jpg")
+            colourthief = colorthief.ColorThief(path)
             dominant_color = colourthief.get_color(quality=1)
-            embed.colour = discord.Colour.from_rgb(dominant_color[0], dominant_color[1], dominant_color[2])
-            os.remove(f"{os.getcwd()}/{id}_small.jpg")
+            self.embed.colour = discord.Colour.from_rgb(dominant_color[0], dominant_color[1], dominant_color[2])
+            os.remove(path)
         except Exception as e:
             print(e)
-            embed.colour = discord.Colour.red()
-        embed.add_field(name = "Title", value = song["title"])
-
-
-        embed.add_field(name = "Channel", value = song["author"])
-        embed.add_field(name = "Duration", value = str(datetime.timedelta(seconds=song["dur"])))
-        embed.add_field(name = "URL", value = song["url"])
+            self.embed.colour = discord.Colour.red()
         if not started:
-            embed.add_field(name = "Time Elapsed", value = datetime.timedelta(seconds=g.variables["timelapsed"]))
-            embed.add_field(name= "Time Left", value = datetime.timedelta(seconds=song["dur"] - g.variables["timelapsed"]))
-        embed.set_image(url = song["coverart"])
-        embed.set_footer(text = f"Requested By: {song['user']}", icon_url=song["user"].avatar.url)
-        embed.timestamp = datetime.datetime.now()
-        view = discord.ui.View()
+            self.embed.add_field(name = "Time Elapsed", value = datetime.timedelta(seconds=g.variables["timelapsed"]), inline = False)
+            self.embed.add_field(name= "Time Left", value = datetime.timedelta(seconds=song["dur"] - g.variables["timelapsed"]))
+        self.embed.add_field(name = "Duration", value = str(datetime.timedelta(seconds=song["dur"])))
+        self.embed.add_field(name = "URL", value = song["url"])
+        self.embed.add_field(name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
+        self.embed.set_image(url = song["coverart"])
+        self.embed.set_footer(text = f"Requested By: {song['user']}", icon_url=song["user"].avatar.url)
+        self.embed.timestamp = datetime.datetime.now()
+        self.view = discord.ui.View()
         shuffleButton = discord.ui.Button(emoji="🔀")
-        shuffleButton.callback=lambda i: callback(i, "sh", interaction)
-        pausePlayButton = discord.ui.Button(emoji="▶️")
-        pausePlayButton.callback=lambda i: callback(i, "p", interaction)
+        shuffleButton.callback=lambda i: self.callback(i, "sh")
+        pausePlayButton = discord.ui.Button(emoji="⏸️")
+        pausePlayButton.callback=lambda i: self.callback(i, "p")
         restartButton = discord.ui.Button(emoji="🔁")
-        restartButton.callback=lambda i: callback(i, "r", interaction)
-        skipButton = discord.ui.Button(emoji="➡️")
-        skipButton.callback = lambda i: callback(i, "sk", interaction)
+        restartButton.callback=lambda i: self.callback(i, "r")
+        skipButton = discord.ui.Button(emoji="⏭️")
+        skipButton.callback=lambda i: self.callback(i, "sk")
         stopButton = discord.ui.Button(emoji="⏹️")
-        stopButton.callback = lambda i: callback(i, "st", interaction)
-        view.add_item(shuffleButton)
-        view.add_item(pausePlayButton)
-        view.add_item(restartButton)
-        view.add_item(skipButton)
-        view.add_item(stopButton)
-        await interaction.channel.send(content = None, embed = embed, file = None, view=view)
+        stopButton.callback=lambda i: self.callback(i, "st")
+        volumeDownButton=discord.ui.Button(emoji="🔉")
+        volumeDownButton.callback = lambda i: self.callback(i, "vd")
+        volumeUpButton=discord.ui.Button(emoji="🔊")
+        volumeUpButton.callback=lambda i: self.callback(i, "vu")
+        
+        self.view.add_item(shuffleButton)
+        self.view.add_item(pausePlayButton)
+        self.view.add_item(restartButton)
+        self.view.add_item(skipButton)
+        self.view.add_item(stopButton)
+        self.view.add_item(volumeUpButton)
+        self.view.add_item(volumeDownButton)
+        self.ogmessage = await interaction.channel.send(content = None, embed = self.embed, file = None, view=self.view)
         
 
     # Create Embed for Addition / Info about a song
-    @classmethod
     async def CreateEmbedAdded(self, interaction: discord.Interaction, song): 
         await interaction.channel.send("Thinking...")
-        embed = discord.Embed(title = song["title"])
+        embed = discord.Embed(title = "Added A Song", description = f"{song['title']}\n{song['author']}")
         import urllib.request
         url = song["url"]
         id = url.removeprefix("https://www.youtube.com/watch?v=")
@@ -120,22 +205,20 @@ class embeds():
         try:
             path = urllib.request.urlretrieve(imgURL, f"{os.getcwd()}/{id}_small.jpg")[0]
             import colorthief
-            colourthief = colorthief.ColorThief(f"{os.getcwd()}/{id}_small.jpg")
+            colourthief = colorthief.ColorThief(path)
             dominant_color = colourthief.get_color(quality=1)
             embed.colour = discord.Colour.from_rgb(dominant_color[0], dominant_color[1], dominant_color[2])
-            os.remove(f"{os.getcwd()}/{id}_small.jpg")
+            os.remove(path)
         except Exception as e:
             print(e)
             embed.colour = discord.Colour.red()
         embed.add_field(name = "Position", value = str(song["id"]))
-        embed.add_field(name = "Title", value = song["title"])
-        embed.add_field(name = "Channel", value = song["author"])
         embed.add_field(name = "Duration", value = str(datetime.timedelta(seconds=song["dur"])))
         embed.add_field(name = "URL", value = song["url"])
         total = 0
         x = 0
-        for i in queue:
-            if x != len(queue)-1:
+        for i in Pl.queue:
+            if x != len(Pl.queue)-1:
                 total += int(i["dur"])
             x += 1
         timel = total - int(g.variables["timelapsed"])
@@ -149,7 +232,7 @@ class embeds():
 
         await interaction.channel.send(content = None, embed = embed, file = None)
 #/Embeds
-        
+Em = embeds()
 
 # Youtube DL Stuff
         
@@ -182,7 +265,7 @@ ytdl_format_options = {
     # bind to ipv4 since ipv6 addresses cause issues sometimes
     'source_address': '0.0.0.0',
     'concurrent-fragments': 2,
-    'paths': {'home': f"{os.getcwd()}//Songs", 'thumbnail': 'Images/Videos'}
+    'paths': {'home': f"{os.getcwd()}//Songs"}
 }   
 ytdl_format_options_no_down = {
     'format': 'bestaudio/best',
@@ -207,7 +290,7 @@ ffmpeg_options = {
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 ytdl_no_down = youtube_dl.YoutubeDL(ytdl_format_options_no_down)
 class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.5):
+    def __init__(self, source, *, data, volume=0.3):
         super().__init__(source, volume)
         self.data = data
         self.title = data.get('title')
@@ -234,136 +317,124 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 #Player and Related
 #Reorder the queue after a song or other operation is made
-async def queuereorder():
-    global queue
-    for song in queue:
-        song["id"] = queue.index(song)
-    return queue
 
-#Set the queue variable
-queue = []
 #Set TimeElapsed Variable
 g.variables["timelapsed"] = 0
-paused = False
 
 #Player Class
 class Player():
     #player - plays the music and cycles through the queue
-    @classmethod
+    def __init__(self, client):
+            self.client = client
+            self.queue = []
+            self.paused =  False
+            self.playing = False
+            self.volume = 3
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         def play(client: discord.Client):
-            voiceclient = client.voice_clients[0]
-            voiceclient.play(discord.FFmpegPCMAudio(source=queue[0]["filename"]))
-            voiceclient.source = discord.PCMVolumeTransformer(voiceclient.source, volume = 0.3)
-        global queue, first
-        self.client = client
-        voiceclient: discord.VoiceClient = client.voice_clients[0]
-        self.voiceclient = voiceclient
-        if voiceclient.is_playing() and not self.paused:
-            await embeds.CreateEmbedAdded(interaction, queue[-1])
-            return queue
+            self.voiceclient.play(discord.FFmpegPCMAudio(source=self.queue[0]["filename"]))
+            self.voiceclient.source = discord.PCMVolumeTransformer(self.voiceclient.source, volume = self.volume / 10)
+        self.voiceclient = client.voice_clients[0]
+        if self.voiceclient.is_playing() and not self.paused:
+            await Em.CreateEmbedAdded(interaction, self.queue[-1])
         else:
             self.paused = False
             self.playing = True
-            g.variables["nowplaying"] = queue[0]
+            g.variables["nowplaying"] = self.queue[0]
             g.variables["timelapsed"] = 0
             logs.info("Player Started!")
-            await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = queue[0]["title"], state = f"🎵{queue[0]['title']} || {queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
-            await embeds.CreateEmbedPlaying(interaction, queue[0], True)
+            await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
+            await Em.CreateEmbedPlaying(interaction, self.queue[0], True)
             waitask = None
-            waitask = asyncio.create_task(coro = self.waitforend(interaction, queue), name = "Wait Task")
+            waitask = asyncio.create_task(coro = self.waitforend(), name = "Wait Task")
             self.thread = waitask
             playthread = threading.Thread(target=play, name="Play Thread", args=[client], daemon=True)
             playthread.start()
             await asyncio.wait([waitask])
-            queue = waitask.result()
+            self.queue = waitask.result()
             await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
-            if queue != []:
-                logs.info("Queue not empty moving on to next song")
+            if self.queue != []:
+                logs.info("self.queue not empty moving on to next song")
                 g.variables["timelapsed"] = 0
-                await queuereorder()
+                await self.queuereorder()
                 await Player.player(interaction, client)
-                return queue, first
             else:
-                await interaction.channel.send("Reached the end of the queue!\nuse /play to add more!")
-                await voiceclient.disconnect()
-                logs.info("Queue empty exiting player")
+                await interaction.channel.send("Reached the end of the self.queue!\nuse /play to add more!")
+                await self.voiceclient.disconnect()
+                logs.info("self.queue empty exiting player")
                 self.playing = False
-                return queue, first
         
+    #Reorder the queue
+    async def queuereorder(self):
+        for song in self.queue:
+            song["id"] = self.queue.index(song)
     #waitforend - Waits for the end of the current song and moves on to the next song, also handles pausing
-    @classmethod
-    async def waitforend(self, interaction, queue):
+    async def waitforend(self):
         logs.info(g.variables["timelapsed"])
-        logs.info(queue[0]["dur"])
-        while g.variables["timelapsed"] <= queue[0]["dur"]:
-            print(f"Time Elapsed: {g.variables['timelapsed']} / {queue[0]['dur']} | Threads: {threading.active_count()}", end="\r")
+        logs.info(self.queue[0]["dur"])
+        while g.variables["timelapsed"] <= self.queue[0]["dur"]:
+            print(f"Time Elapsed: {g.variables['timelapsed']} / {self.queue[0]['dur']} | {Pl.volume} | {self.queue[0]['title']}", end="\r")
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
 
-        if queue[0]["userfile"]:
-            os.remove(queue[0]["filename"])
-            if queue[0]["coverart"] != f"{os.getcwd()}//Songs//Images//generic-thumb.png":
-                os.remove(queue[0]["coverart"])
-            else:
-                os.remove(queue[0]["coverart"])
-        queue.pop(0)
-        return queue
+        if self.queue[0]["userfile"]:
+            os.remove(self.queue[0]["filename"])
+            if self.queue[0]["coverart"] != f"{os.getcwd()}//Songs//Images//generic-thumb.png":
+                os.remove(self.queue[0]["coverart"])
+        self.queue.pop(0)
     
     #stop - stops the currently playing song and clears the queue
-    @classmethod
     async def stop(self):
-        global queue
         logs.info("Stopped")
         self.voiceclient.stop()
-        queue = []
+        self.queue = []
         self.thread.cancel()
         await self.voiceclient.disconnect()
         await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
         g.variables["timelapsed"] = 0
-        return queue
     #stop - stops the currently playing song and removes it from the queue before starting the player again
-    @classmethod
     async def skip(self, interaction, client):
         logs.info("Skipped")
-        global queue
         self.voiceclient.stop()
-        queue.pop(0)
+        self.queue.pop(0)
         self.thread.cancel()
         g.variables["timelapsed"] = 0
         await Player.player(interaction, client)
-        return queue
     #restart - stops the current song and starts player again from the same song
-    @classmethod
     async def restart(self, interaction, client):
         logs.info("Restarted")
-        global queue
+        
         self.voiceclient.stop()
         self.thread.cancel()
         g.variables["timelapsed"] = 0
         await Player.player(interaction, client)
-        return queue
     #pause - pause playing and update paused so waitforend doesnt keep counting
-    @classmethod
     async def pause(self):
         logs.info("Paused")
         self.paused = True
         self.voiceclient.pause()
      #pause - resume playing and update paused so waitforend continues counting
-    @classmethod
     async def resume(self):
         logs.info("Resuming")
         self.paused = False
         self.voiceclient.resume()
     
+    async def volume_up(self):
+        self.volume += 1
+        self.voiceclient.source.volume = self.volume / 10
+    async def volume_down(self):
+        self.volume -= 1
+        self.voiceclient.source.volume = self.volume / 10
+
+
 #/Player and Related
-        
 #Commands
 
 #PlayCommand - Takes a Query, and plays it on discord
 async def PlayCommand(interaction: discord.Interaction, query: str, client: discord.Client):
-
+    global Pl
+    Pl = Player(client=client)
     #Prepare for downloading a playlist
     async def DownPrep(interaction: discord.Interaction, queries: list):
         #This function will find out how many threads are needed for a playlist
@@ -385,7 +456,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
 
 
 
-    #youtube -  donwload a youtube link and return the filename
+    #youtube - download a youtube link and return the filename
     async def youtube(interaction: discord.Interaction, query: str):
         songs = await Down(interaction, [f'https://www.youtube.com/watch?v={data["id"]}'], 0)
         return songs
@@ -435,14 +506,16 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
             file = files[0]
             query = file
     await interaction.edit_original_response(content=f"Searching for the song on Youtube...")
-    if "playlist" in query:
-        pass
+    if "playlist?list" in query:
+        await interaction.edit_original_response(content = f"Found a playlist!")
+
+
 
     else:
         # try:
         #     data = await get_info_youtube(query)
         # except:
-        data = await get_info_ytdlp(query)
+        data = await get_info(query)
         await interaction.edit_original_response(content=f"Found! {data['title']} by {data['channel']}")
         result = db.song.DB(data["title"])
         if result == None:
@@ -458,7 +531,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                 "channelart": "",
                 "user": interaction.user,
                 "dur": data['duration'],
-                "id": len(queue),
+                "id": len(Pl.queue),
                 "userfile": False,
             }
             try:
@@ -480,17 +553,17 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                 "coverart": result['coverart'],
                 "user": interaction.user,
                 "dur": result['dur'],
-                "id": len(queue),
+                "id": len(Pl.queue),
                 "userfile": False,
             }
         await interaction.edit_original_response(content = "Adding the song to the queue...")
-        queue.append(song)
-        await Player.player(interaction, client)
+        Pl.queue.append(song)
+        await Pl.player(interaction, client)
 
 page = 0
 #QueueCommand - Get and show the queue, in a nice format
 async def QueueCommand(interaction: discord.Interaction):
-    logs.info(f"Queue command was called! by: {interaction.user}")
+    logs.info(f"Pl.queue command was called! by: {interaction.user}")
     global page
     async def callback(i, x, ii):
         global page
@@ -509,18 +582,18 @@ async def QueueCommand(interaction: discord.Interaction):
             else:
                 page -= 1
 
-            embed = discord.Embed(title=f"Queue Page: {page+1} / {len(temptemp)}")
+            embed = discord.Embed(title=f"Page: {page+1} / {len(temptemp)}")
             for i in temptemp[page]:
                 embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nChannel: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
             totalp = 0
             totalq = 0
             for i in temptemp[page]:
                 totalp += i["dur"]
-            for i in queue:
+            for i in Pl.queue:
                 totalq += i["dur"]
             embed.colour = discord.Colour.red()
             embed.add_field(name=f"Total Page Length", value = datetime.timedelta(seconds =  totalp))
-            embed.add_field(name=f"Total Queue Length", value =  datetime.timedelta(seconds = totalq))
+            embed.add_field(name=f"Total queue Length", value =  datetime.timedelta(seconds = totalq))
             view = discord.ui.View()
             leftbutton = discord.ui.Button(emoji="⬅️")
             rightbutton = discord.ui.Button(emoji="➡️")
@@ -531,20 +604,20 @@ async def QueueCommand(interaction: discord.Interaction):
             await ii.edit_original_response(embed=embed, view = view)
             return page
 
-    if queue != []:
+    if Pl.queue != []:
         await interaction.response.send_message("Thinking...", ephemeral=True)
-        pages = len(queue) / 10  # Amount of Items Per Page
+        pages = len(Pl.queue) / 10  # Amount of Items Per Page
         if pages == 0:
             pages = 1
         elif pages % 1 != 0:
             pages = math.floor(pages) + 1
         logs.info(f"The amount of pages we need is: {pages}")
-        temp = np.array_split(queue, pages)
+        temp = np.array_split(Pl.queue, pages)
         temptemp = []
         for i in temp:
             temptemp.append(i.tolist())
         logs.info(page)
-        embed = discord.Embed(title=f"Queue Page: {page+1} / {len(temptemp)}")
+        embed = discord.Embed(title=f"Page: {page+1} / {len(temptemp)}")
         for i in temptemp:
             logs.info(i)
         for i in temptemp[page]:
@@ -553,11 +626,11 @@ async def QueueCommand(interaction: discord.Interaction):
         totalq = 0
         for i in temptemp[page]:
             totalp += i["dur"]
-        for i in queue:
+        for i in Pl.queue:
             totalq += i["dur"]
         embed.colour = discord.Colour.red()
         embed.add_field(name=f"Total Page Length", value = datetime.timedelta(seconds =  totalp))
-        embed.add_field(name=f"Total Queue Length", value =  datetime.timedelta(seconds = totalq))
+        embed.add_field(name=f"Total queue Length", value =  datetime.timedelta(seconds = totalq))
         view = discord.ui.View()
         leftbutton = discord.ui.Button(emoji="⬅️")
         rightbutton = discord.ui.Button(emoji="➡️")
@@ -568,33 +641,33 @@ async def QueueCommand(interaction: discord.Interaction):
         await interaction.edit_original_response(embed=embed, view = view)
         return page
     else:
-        await interaction.response.send_message("The Queue is Empty!")
+        await interaction.response.send_message("The queue is Empty!")
         return page
     
 
-#ShuffleCommand - Shuffle the Queue
+#ShuffleCommand - Shuffle the queue
 async def ShuffleCommand(interaction: discord.Interaction):
     logs.info(f"Shuffle command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Shuffle command was called! by: {interaction.user}")
+    await interaction.response.send_message(f"Thinking...")
 
 
 
 #RemoveCommand - Remove a video from the queue
 async def RemoveCommand(interaction: discord.Interaction, index):
     logs.info(f"Remove command was called! by: {interaction.user}")
-    global queue
-    name = queue[index]["title"]
-    if queue != []:
+    
+    name = Pl.queue[index]["title"]
+    if Pl.queue != []:
         if index != 0:
             try:
                 await interaction.response.send_message(f"Removing: {name} from {index}")
-                queue.pop(index)
+                Pl.queue.pop(index)
             except Exception as e:
                 await interaction.edit_original_response(content=e)
             else:
                 await interaction.edit_original_response(content=f"Removed: {name} from {index}")
                 x = 0
-                for i in queue:
+                for i in Pl.queue:
                     i["id"] = x
                     x += 1
 
@@ -602,8 +675,6 @@ async def RemoveCommand(interaction: discord.Interaction, index):
             await interaction.response.send_message(content=f"Can't remove the song you are listening to!, use /skip instead")
     else:
         await interaction.response.send_message(content=f"There is nothing to remove!")
-    return queue
-
 
 
 
@@ -612,7 +683,7 @@ async def RemoveCommand(interaction: discord.Interaction, index):
 async def PauseCommand(interaction: discord.Interaction):
     logs.info(f"Pause command was called! by: {interaction.user}")
     await interaction.response.send_message(f"Pausing!")
-    await Player.pause()
+    await Pl.pause()
 
 
 
@@ -621,7 +692,7 @@ async def PauseCommand(interaction: discord.Interaction):
 async def ResumeCommand(interaction: discord.Interaction):
     logs.info(f"Resume command was called by: {interaction.user}")
     await interaction.response.send_message(f"Resuming...")
-    await Player.resume()
+    await Pl.resume()
 
 
 
@@ -633,7 +704,7 @@ async def SkipCommand(interaction: discord.Interaction, client):
     if not voiceclient.is_playing():
         await interaction.followup.send("Nothing is playing!")
     else:
-        await Player.skip(interaction, client)
+        await Pl.skip(interaction, client)
 
 
 
@@ -642,8 +713,8 @@ async def SkipCommand(interaction: discord.Interaction, client):
 #StopCommand - Stop the current playing video and clear the queue
 async def StopCommand(interaction: discord.Interaction):
     logs.info(f"Stop command was called! by: {interaction.user}")
-    await interaction.response.send_message(f"Stopping and Clearing Queue...")
-    await Player.stop()
+    await interaction.response.send_message(f"Stopping and Clearing queue...")
+    await Pl.stop()
 
 
 
@@ -653,7 +724,7 @@ async def StopCommand(interaction: discord.Interaction):
 async def RestartCommand(interaction: discord.Interaction, client):
     logs.info(f"Restart command was called! by: {interaction.user}")
     await interaction.response.send_message(f"Restarting...")
-    await Player.restart(interaction, client)
+    await Pl.restart(interaction, client)
 
 
 
@@ -692,8 +763,8 @@ async def JoinCommand(interaction: discord.Interaction):
 async def NowPlayingCommand(interaction: discord.Interaction, client: discord.Client):
     logs.info(f"Now Playing command was called! by: {interaction.user}")
     await interaction.response.send_message("Thinking...")
-    if Player.playing:
-        await embeds.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
+    if Pl.playing:
+        await Em.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
 
 
 
@@ -738,7 +809,7 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
         "coverart": "",
         "user": None,
         "dur": 0.0,
-        "id": len(queue),
+        "id": len(Pl.queue),
         "userfile": True,
     }
     try:
@@ -789,20 +860,35 @@ async def PlayFileCommand(interaction: discord.Interaction, file: discord.Attach
         song["coverart"] = f"{os.getcwd()}//Songs//Images//generic-thumb.png"
 
     logs.info(song)
-    queue.append(song)
-    await embeds.CreateEmbedAdded(interaction, song)
-    await Player.player(interaction, client)
-
-
-
-
-
-
-async def get_info_ytdlp(url):
-    response = await YTDLSource.from_url_without_download(url)
-    return response
+    Pl.queue.append(song)
+    await Em.CreateEmbedAdded(interaction, song)
+    await Pl.player(interaction, client)
 
 
 
 
 #/Commands
+
+#Miscellaneous Functions
+async def get_info(url):
+    from googleapiclient.discovery import build
+    import googleapiclient.discovery
+    token = open("key.txt", "r").readlines()[3]
+    youtube = build('youtube', 'v3', developerKey=token)
+    try:
+        raise Exception("yo") 
+        request = youtube.search().list(part="id", q=url, maxResults=1, type="video")
+        response =  request.execute()
+
+        print(response)
+    except Exception as e:
+        logs.warn(f"An Error Occured, most likely we have reached the quota limit \nError: {e}")
+        response = await YTDLSource.from_url_without_download(url)
+        return response
+    
+
+#/Miscellaneous Functions
+
+
+
+

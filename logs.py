@@ -1,6 +1,8 @@
 import logging
 import os
 from datetime import date
+import colorama
+
 logpath = os.path.join(os.path.dirname(__file__), "Logs/")
 logs = len(os.listdir(logpath))
 
@@ -11,16 +13,16 @@ logging.basicConfig(filename=f'{logpath}{logs+1}_{date.today()}_Log.log', filemo
 
 
 def info(message):
-    strmessage = str(message)
-    logging.info(strmessage)
+    strmessage = f"{colorama.Fore.BLUE}Info - {colorama.Fore.WHITE}{str(message)}"
+    logging.info(str(message))
     print(strmessage)
 
 def warn(message):
-    strmessage = str(message)
-    logging.warn(strmessage)
+    strmessage = f"{colorama.Fore.YELLOW}Warning - {colorama.Fore.WHITE}{str(message)}"
+    logging.warn(str(message))
     print(strmessage)
 
 def error(exc):
-    logging.error("Something Went Wrong!", exc_info=exc)
+    logging.error(F"{colorama.Fore.RED}Something Went Wrong!", exc_info=exc)
     print("Something Went Wrong! Check Logs for information")
 
