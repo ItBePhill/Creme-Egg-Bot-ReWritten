@@ -346,30 +346,21 @@ class Player():
             await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
             await Em.CreateEmbedPlaying(interaction, self.queue[0], True)
             waitask = None
-            waitask = asyncio.create_task(coro = self.waitforend(), name = "Wait Task")
+            waitask = asyncio.create_task(coro = self.waitforend(interaction, client), name = "Wait Task")
             self.thread = waitask
             playthread = threading.Thread(target=play, name="Play Thread", args=[client], daemon=True)
             playthread.start()
             await asyncio.wait([waitask])
             self.queue = waitask.result()
-            await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
-            if self.queue != []:
-                logs.info("self.queue not empty moving on to next song")
-                g.variables["timelapsed"] = 0
-                await self.queuereorder()
-                await Player.player(interaction, client)
-            else:
-                await interaction.channel.send("Reached the end of the self.queue!\nuse /play to add more!")
-                await self.voiceclient.disconnect()
-                logs.info("self.queue empty exiting player")
-                self.playing = False
-        
     #Reorder the queue
     async def queuereorder(self):
-        for song in self.queue:
-            song["id"] = self.queue.index(song)
+        if self.queue != None:
+            for song in self.queue:
+                song["id"] = self.queue.index(song)
+        else:
+            logs.warn("Queue is empty")
     #waitforend - Waits for the end of the current song and moves on to the next song, also handles pausing
-    async def waitforend(self):
+    async def waitforend(self, interaction, client):
         logs.info(g.variables["timelapsed"])
         logs.info(self.queue[0]["dur"])
         while g.variables["timelapsed"] <= self.queue[0]["dur"]:
@@ -378,11 +369,25 @@ class Player():
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
 
+
+
         if self.queue[0]["userfile"]:
             os.remove(self.queue[0]["filename"])
             if self.queue[0]["coverart"] != f"{os.getcwd()}//Songs//Images//generic-thumb.png":
                 os.remove(self.queue[0]["coverart"])
         self.queue.pop(0)
+        
+        if self.queue != []:
+            logs.info("queue not empty moving on to next song")
+            g.variables["timelapsed"] = 0
+            await self.player(interaction, client)
+            self.queuereorder
+        else:
+            await interaction.channel.send("Reached the end of the self.queue!\nuse /play to add more!")
+            await self.voiceclient.disconnect()
+            logs.info("self.queue empty exiting player")
+            self.playing = False
+        await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
     
     #stop - stops the currently playing song and clears the queue
     async def stop(self):
