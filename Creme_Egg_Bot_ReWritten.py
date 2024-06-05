@@ -29,6 +29,7 @@ def runbot(process):
 #-------------------------------------------------
 @client.event
 async def on_ready():
+    CremeModules.MusicModule.init(client)
     await tree.sync(guild=discord.Object(id=1014812996226256927))
     if "Windows" in platform.platform(True, True):
       await client.get_channel(1105906381552369725).send(f"Connected!")

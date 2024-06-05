@@ -17,6 +17,7 @@ import yt_dlp as youtube_dl
 import threading
 import spotipy
 from spotipy import SpotifyClientCredentials
+from StringProgressBar import progressBar
 import database as db
 #/Imports
 #Startup
@@ -25,6 +26,13 @@ enabled = True
 #Check if the module is running or not
 def running():
     return True
+def init(client: discord.Client):
+    global Pl, Em
+    logs.warn("Initialising Music Module")
+    logs.info("Setting Pl")
+    Pl =  Player(client)
+    logs.info("Setting Em")
+    Em = embeds()
 first = True
 genericthumburl = "https://raw.githubusercontent.com/ItBePhill/Creme-Egg-Bot-ReWritten/main/Songs/Images/generic-thumb.png"
 thumbsmall = "https://i.ytimg.com/vi/{_ID_}/default.jpg"
@@ -35,6 +43,7 @@ thumbsmall = "https://i.ytimg.com/vi/{_ID_}/default.jpg"
 
 class embeds():
     def __init__(self):
+        logs.warn("Initialising  Class")
         self.volabel = None
         self.volumelabels = [
             ":black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: :black_large_square: ",
@@ -52,6 +61,8 @@ class embeds():
         self.ogmessage = None
         self.embed = None
         self.view = None
+        self.total = 100
+        self.started = None
     async def callback(self, i: discord.Interaction, x: str):
         await i.response.send_message(content =  "Thinking...", ephemeral=True)
         await i.delete_original_response()
@@ -79,6 +90,8 @@ class embeds():
                     volumeDownButton.callback = lambda i: self.callback(i, "vd")
                     volumeUpButton=discord.ui.Button(emoji="🔊")
                     volumeUpButton.callback=lambda i: self.callback(i, "vu")
+                    # refreshButton = discord.ui.Button(emoji="🔃")
+                    # refreshButton.callback=lambda i: self.callback(i, "rf")
                     view.add_item(shuffleButton)
                     view.add_item(pausePlayButton)
                     view.add_item(restartButton)
@@ -86,7 +99,9 @@ class embeds():
                     view.add_item(stopButton)
                     view.add_item(volumeUpButton)
                     view.add_item(volumeDownButton)
-                    await self.ogmessage.edit(embed=embed, view=view)
+                    # if not self.started:
+                    #     self.view.add_item(refreshButton)
+                    await self.ogmessage.edit(view=view)
                 else:
                     await Pl.pause()
                     view = discord.ui.View()
@@ -101,6 +116,8 @@ class embeds():
                     skipButton.callback=lambda i: self.callback(i, "sk")
                     stopButton = discord.ui.Button(emoji="⏹️")
                     stopButton.callback=lambda i: self.callback(i, "st")
+                    # refreshButton = discord.ui.Button(emoji="🔃")
+                    # refreshButton.callback=lambda i: self.callback(i, "rf")
                     volumeDownButton=discord.ui.Button(emoji="🔉")
                     volumeDownButton.callback = lambda i: self.callback(i, "vd")
                     volumeUpButton=discord.ui.Button(emoji="🔊")
@@ -112,7 +129,9 @@ class embeds():
                     view.add_item(stopButton)
                     view.add_item(volumeUpButton)
                     view.add_item(volumeDownButton)
-                    await self.ogmessage.edit(embed=embed, view=view)
+                    # if not self.started:
+                    #     self.view.add_item(refreshButton)
+                    await self.ogmessage.edit(view=view)
             case "r":
                 await Pl.restart(i, Pl.client)
             case "st":
@@ -121,25 +140,32 @@ class embeds():
                 await Pl.volume_up()
                 embed = self.embed
                 view = self.view
-                embed.remove_field(len(embed._fields) - 1)
-                self.embed.add_field(name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
-                await self.ogmessage.edit(embed=embed, view=view)
+                embed.set_field_at(len(embed._fields) - 1, name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
+                await self.ogmessage.edit(embed=embed)
             case "vd":
                 await Pl.volume_down()
                 embed = self.embed
                 view = self.view
-                embed.remove_field(len(embed._fields) - 1)
-                self.embed.add_field(name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
-                await self.ogmessage.edit(embed=embed, view=view)
+                embed.set_field_at(len(embed._fields) - 1, name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
+                await self.ogmessage.edit(embed=embed)
+            case "rf":
+                embed = self.embed
+                view = self.view
+                # Assign values to total and current values
+                current = (g.variables["timelapsed"] / Pl.queue[0]["dur"]) * 100
+                # First two arguments are mandatory
+                bardata = progressBar.splitBar(self.total, int(current), size = 9)
+                embed.set_field_at(len(embed._fields) - 2, name = "Time Elapsed", value = f"{datetime.timedelta(seconds=g.variables['timelapsed'])}|{bardata[0]}|{datetime.timedelta(seconds=Pl.queue[0]['dur'])}", inline = False)
+                await self.ogmessage.edit(embed=embed)
 
     #Create the "Playing" Embed, has a variation for Now Playing and Started Playing
     async def CreateEmbedPlaying(self, interaction: discord.Interaction, song: dict, started: bool):
-                    
         await interaction.channel.send(content = "Thinking...")
+        self.started = started
         if started:
-            title = f"Started Playing"
+            title = f":notes: Started Playing :notes:"
         else:
-            title = f"Now Playing"
+            title = f":notes: Now Playing :notes:"
         self.embed = discord.Embed(title = title, description = f"{song['title']}\n{song['author']}")
         import urllib.request
         url = song["url"]
@@ -157,11 +183,14 @@ class embeds():
         except Exception as e:
             print(e)
             self.embed.colour = discord.Colour.red()
-        if not started:
-            self.embed.add_field(name = "Time Elapsed", value = datetime.timedelta(seconds=g.variables["timelapsed"]), inline = False)
-            self.embed.add_field(name= "Time Left", value = datetime.timedelta(seconds=song["dur"] - g.variables["timelapsed"]))
         self.embed.add_field(name = "Duration", value = str(datetime.timedelta(seconds=song["dur"])))
         self.embed.add_field(name = "URL", value = song["url"])
+        if not started:            # Assign values to total and current values
+            current = (g.variables["timelapsed"] / song["dur"]) * 100
+            # First two arguments are mandatory
+            bardata = progressBar.splitBar(self.total, int(current), size = 9)
+            self.embed.add_field(name = "Time Elapsed", value = f"{datetime.timedelta(seconds=g.variables['timelapsed'])}|{bardata[0]}|{datetime.timedelta(seconds=song['dur'])}", inline = False)
+            # self.embed.add_field(name= "Time Left", value = datetime.timedelta(seconds=song["dur"] - g.variables["timelapsed"]))
         self.embed.add_field(name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
         self.embed.set_image(url = song["coverart"])
         self.embed.set_footer(text = f"Requested By: {song['user']}", icon_url=song["user"].avatar.url)
@@ -181,6 +210,8 @@ class embeds():
         volumeDownButton.callback = lambda i: self.callback(i, "vd")
         volumeUpButton=discord.ui.Button(emoji="🔊")
         volumeUpButton.callback=lambda i: self.callback(i, "vu")
+        # refreshButton = discord.ui.Button(emoji="🔃")
+        # refreshButton.callback=lambda i: self.callback(i, "rf")
         
         self.view.add_item(shuffleButton)
         self.view.add_item(pausePlayButton)
@@ -189,13 +220,15 @@ class embeds():
         self.view.add_item(stopButton)
         self.view.add_item(volumeUpButton)
         self.view.add_item(volumeDownButton)
+        # if not started:
+        #     self.view.add_item(refreshButton)
         self.ogmessage = await interaction.channel.send(content = None, embed = self.embed, file = None, view=self.view)
         
 
     # Create Embed for Addition / Info about a song
     async def CreateEmbedAdded(self, interaction: discord.Interaction, song): 
         await interaction.channel.send("Thinking...")
-        embed = discord.Embed(title = "Added A Song", description = f"{song['title']}\n{song['author']}")
+        embed = discord.Embed(title = "Added a song", description = f"{song['title']}\n{song['author']}")
         import urllib.request
         url = song["url"]
         id = url.removeprefix("https://www.youtube.com/watch?v=")
@@ -232,8 +265,6 @@ class embeds():
 
         await interaction.channel.send(content = None, embed = embed, file = None)
 #/Embeds
-Em = embeds()
-
 # Youtube DL Stuff
         
 # Set up for yt-dlp / ffmpeg
@@ -251,8 +282,6 @@ nowplaying_default={
 }
 ytdl_format_options = {
     'format': 'bestaudio/best',
-    'extract-audio': True,
-    'audio-format': "wav",
     'audio-quality': 0,
     'restrictfilenames': True,
     'noplaylist': True,
@@ -264,7 +293,7 @@ ytdl_format_options = {
     'default_search': 'auto',
     # bind to ipv4 since ipv6 addresses cause issues sometimes
     'source_address': '0.0.0.0',
-    'concurrent-fragments': 2,
+    'concurrent-fragments': 1,
     'paths': {'home': f"{os.getcwd()}//Songs"}
 }   
 ytdl_format_options_no_down = {
@@ -316,22 +345,22 @@ class YTDLSource(discord.PCMVolumeTransformer):
 #/Youtube DL Stuff
 
 #Player and Related
-#Reorder the queue after a song or other operation is made
 
-#Set TimeElapsed Variable
+#Set Timelapsed Variable
 g.variables["timelapsed"] = 0
 
 #Player Class
 class Player():
     #player - plays the music and cycles through the queue
     def __init__(self, client):
+            logs.warn("Initialising Player Class")
             self.client = client
             self.queue = []
             self.paused =  False
             self.playing = False
             self.volume = 3
     async def player(self, interaction: discord.Interaction, client: discord.Client):
-        def play(client: discord.Client):
+        def play():
             self.voiceclient.play(discord.FFmpegPCMAudio(source=self.queue[0]["filename"]))
             self.voiceclient.source = discord.PCMVolumeTransformer(self.voiceclient.source, volume = self.volume / 10)
         self.voiceclient = client.voice_clients[0]
@@ -348,7 +377,7 @@ class Player():
             waitask = None
             waitask = asyncio.create_task(coro = self.waitforend(interaction, client), name = "Wait Task")
             self.thread = waitask
-            playthread = threading.Thread(target=play, name="Play Thread", args=[client], daemon=True)
+            playthread = threading.Thread(target=play, name="Play Thread", daemon=True)
             playthread.start()
             await asyncio.wait([waitask])
             self.queue = waitask.result()
@@ -364,7 +393,12 @@ class Player():
         logs.info(g.variables["timelapsed"])
         logs.info(self.queue[0]["dur"])
         while g.variables["timelapsed"] <= self.queue[0]["dur"]:
-            print(f"Time Elapsed: {g.variables['timelapsed']} / {self.queue[0]['dur']} | {Pl.volume} | {self.queue[0]['title']}", end="\r")
+            # Assign values to total and current values
+            total = 100
+            current = (g.variables["timelapsed"] / self.queue[0]["dur"]) * 100
+            # First two arguments are mandatory
+            bardata = progressBar.splitBar(total, int(current), size=10)
+            print(f"Time Elapsed: {g.variables['timelapsed']}|{bardata[0]}|{self.queue[0]['dur']} | {Pl.volume} | {self.queue[0]['title']}", end="\r")
             if not self.paused:
                 g.variables["timelapsed"] += 1
             await asyncio.sleep(1.0)
@@ -376,14 +410,16 @@ class Player():
             if self.queue[0]["coverart"] != f"{os.getcwd()}//Songs//Images//generic-thumb.png":
                 os.remove(self.queue[0]["coverart"])
         self.queue.pop(0)
+
+        logs.info(len(self.queue))
         
         if self.queue != []:
             logs.info("queue not empty moving on to next song")
             g.variables["timelapsed"] = 0
             await self.player(interaction, client)
-            self.queuereorder
+            await self.queuereorder()
         else:
-            await interaction.channel.send("Reached the end of the self.queue!\nuse /play to add more!")
+            await interaction.channel.send("Reached the end of the queue!\nuse /play to add more!")
             await self.voiceclient.disconnect()
             logs.info("self.queue empty exiting player")
             self.playing = False
@@ -438,8 +474,6 @@ class Player():
 
 #PlayCommand - Takes a Query, and plays it on discord
 async def PlayCommand(interaction: discord.Interaction, query: str, client: discord.Client):
-    global Pl
-    Pl = Player(client=client)
     #Prepare for downloading a playlist
     async def DownPrep(interaction: discord.Interaction, queries: list):
         #This function will find out how many threads are needed for a playlist
@@ -568,7 +602,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
 page = 0
 #QueueCommand - Get and show the queue, in a nice format
 async def QueueCommand(interaction: discord.Interaction):
-    logs.info(f"Pl.queue command was called! by: {interaction.user}")
+    logs.info(f"queue command was called! by: {interaction.user}")
     global page
     async def callback(i, x, ii):
         global page
@@ -768,8 +802,11 @@ async def JoinCommand(interaction: discord.Interaction):
 async def NowPlayingCommand(interaction: discord.Interaction, client: discord.Client):
     logs.info(f"Now Playing command was called! by: {interaction.user}")
     await interaction.response.send_message("Thinking...")
+    await interaction.delete_original_response()
     if Pl.playing:
         await Em.CreateEmbedPlaying(interaction, g.variables["nowplaying"], False)
+    else:
+        await interaction.channel.send("Nothing is playing!")
 
 
 
