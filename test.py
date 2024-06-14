@@ -1,34 +1,17 @@
-from googleapiclient.discovery import build
-import isodate
-import pprint
+import random, pprint, time, datetime
 pp = pprint.PrettyPrinter()
-from googleapiclient.discovery import build
-song = {
-    "Title": None,
-    "Channel": None,
-    "Duration": None,
-    "Thumbnail": None,
-    "URL": None
-}
-api_key = open("key.txt", "r").readlines()[3]
-youtube = build('youtube', 'v3', developerKey=api_key)
-
-request = youtube.search().list(
-    q="The Summoning Sleep Token",
-    part="id",
-    type="video"
-)
-response = request.execute()
-print(response["items"][0]["id"]["videoId"])
-request2 = youtube.videos().list(
-    id=response["items"][0]["id"]["videoId"],
-    part="snippet,contentDetails"
-)
-response2 = request2.execute()
-song["Title"] = response2['snippet']['title']
-song["Channel"] = response2['snippet']['channelTitle']
-song["Thumbnail"] = response2['snippet']['thumbnails']
-song["Duration"] = response2['contentDetails']['duration']
-song["URL"] = f"https://www.youtube.com/watch?v={response2['id']}"
-
-pp.pprint(song[""])
+logs.info(f"Shuffle command was called! by: {interaction.user}")
+await interaction.response.send_message(f"Shuffling...")
+t1 = time.time()
+shufflequeue = self.queue.copy()
+newqueue=[]
+for i in range(len(shufflequeue) -1):
+    newqueue.append(0)
+first = shufflequeue.pop(0)
+for num in range(len(shufflequeue)):
+    newqueue[num] = shufflequeue.pop(random.randint(0, len(shufflequeue) - 1))
+newqueue.insert(0, first)
+for i in range(0, len(newqueue)):
+    newqueue[i]["id"] = i
+t2 = time.time()
+print(f"Shuffle took: {datetime.timedelta(seconds=t2-t1)}")

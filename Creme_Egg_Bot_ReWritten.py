@@ -137,6 +137,13 @@ if CremeModules.MusicModule.enabled == True:
   @tree.command(name = "nowplaying", description="Show Information on the Currently Playing Song", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.NowPlayingCommand(interaction, client)
+  
+  @tree.command(name = "info", description="Info from a song in the queue", guild = discord.Object(id=1014812996226256927))
+  @app_commands.describe(
+      index="The Position of the song you want the information for",
+  )
+  async def InfoCommand(interaction: discord.Interaction, index: int):
+    await CremeModules.MusicModule.InfoCommand(interaction, index)
 
   @tree.command(name = "playfile", description="Play a file from your computer", guild = discord.Object(id=1014812996226256927))
   @app_commands.describe(

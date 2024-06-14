@@ -8,6 +8,10 @@ enabled = True
 def running():
     return True
 
+async def UpdateCounters(guild: discord.Guild):
+    await guild.create_voice_channel()
+
+
 
 async def ShowsCommand(interaction: discord.Interaction):
     async def Edit(i, ii):

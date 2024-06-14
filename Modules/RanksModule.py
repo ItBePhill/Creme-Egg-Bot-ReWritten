@@ -5,3 +5,4 @@ logs.info("Ranks Module Started Successfully!")
 enabled = True
 def running():
     return True
+async def AddXP():
