@@ -31,7 +31,7 @@ def running():
 def init(client: discord.Client):
     global Pl, Em
     logs.info("Initialising Music Module")
-    queues[0] = Player(client)
+    queues.append(Player(client))
     Pl = queues[0]
     Em = embeds()
 first = True
