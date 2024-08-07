@@ -6,10 +6,10 @@ the bot isn't fully complete yet as it can't play playlists
 
 API Keys should be in a file called key.txt with the format:
 
-line 1 - Discord Token
-line 2 - Spotify Secret Token
-line 3 - Spotify ID Token
-line 4 - Google API Token
+line 1 - Discord Token<br>
+line 2 - Spotify Secret Token<br>
+line 3 - Spotify ID Token<br>
+line 4 - Google API Token<br>
 
 
 addtionally you need to make two folders:
