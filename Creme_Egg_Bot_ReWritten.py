@@ -86,14 +86,43 @@ if CremeModules.MovieModule.enabled == True:
 if CremeModules.MusicModule.enabled == True:
   @tree.command(name = "play", description="Play a Song", guild = discord.Object(id=1014812996226256927))
   @app_commands.describe(
-      query="The song you want to play",
+      query = "The song you want to play",
+      starttime = "The time to start the song at in seconds P.S. (by default will be set to 0)",
+      auto_play = "Auto Play the current song in the queue when you switch"
   )
-  async def PlayCommand(interaction: discord.Interaction, query: str):
-    await CremeModules.MusicModule.PlayCommand(interaction, query, client)
+  async def PlayCommand(interaction: discord.Interaction, query: str, starttime: float|None):
+    if starttime == None:
+      starttime = 0
+    await CremeModules.MusicModule.PlayCommand(interaction, query, starttime, client)
 
   @tree.command(name = "queue", description="Show the Queue", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.QueueCommand(interaction)
+
+  @tree.command(name = "change_queue", description="Change to another queue", guild = discord.Object(id=1014812996226256927))
+  @app_commands.describe(
+      index = "Index of queue to change to",
+      continue_ = "Whether the bot will continue playing where you left off on the queue (True by default)",
+  )
+  async def ChangeQueueCommand(interaction: discord.Interaction, index: int, continue_: bool|None):
+    if continue_ == None:
+      continue_ = True
+    await CremeModules.MusicModule.ChangeQueueCommand(interaction, index, continue_)
+  @app_commands.describe(
+      change = "Whether to change to the new queue after it is created (True by default)",
+  )
+  @tree.command(name = "create_queue", description="Create a new Queue", guild = discord.Object(id=1014812996226256927))
+  async def CreateQueueCommand(interaction: discord.Interaction, change: bool|None):
+    if change == None:
+      change = True
+    await CremeModules.MusicModule.CreateQueueCommand(interaction, client, change)
+  
+  @tree.command(name = "list_queues", description="list queues", guild = discord.Object(id=1014812996226256927))
+  async def CreateQueueCommand(interaction: discord.Interaction, change: bool|None):
+    if change == None:
+      change = True
+    await CremeModules.MusicModule.CreateQueueCommand(interaction, client, change)
+  
   
   @tree.command(name = "shuffle", description="Shuffle the Queue", guild = discord.Object(id=1014812996226256927))
   async def ShuffleCommand(interaction: discord.Interaction):
@@ -134,7 +163,7 @@ if CremeModules.MusicModule.enabled == True:
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.JoinCommand(interaction)
   
-  @tree.command(name = "nowplaying", description="Show Information on the Currently Playing Song", guild = discord.Object(id=1014812996226256927))
+  @tree.command(name = "now_playing", description="Show Information on the Currently Playing Song", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.NowPlayingCommand(interaction, client)
   

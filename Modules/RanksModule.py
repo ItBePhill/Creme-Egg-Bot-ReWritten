@@ -7,3 +7,6 @@ def running():
     return True
 async def AddXP():
     pass
+
+async def GetXP():
+    pass

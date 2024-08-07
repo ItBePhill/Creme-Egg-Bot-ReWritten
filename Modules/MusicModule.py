@@ -23,13 +23,16 @@ import database as db
 #Startup
 logs.info("Music Module Started Successfully!")
 enabled = True
+queues = []
+queueindex = 0
 #Check if the module is running or not
 def running():
     return True
 def init(client: discord.Client):
     global Pl, Em
     logs.info("Initialising Music Module")
-    Pl = Player(client)
+    Pl = queues[0] = Player(client)
+
     Em = embeds()
 first = True
 genericthumburl = "https://raw.githubusercontent.com/ItBePhill/Creme-Egg-Bot-ReWritten/main/Songs/Images/generic-thumb.png"
@@ -158,7 +161,8 @@ class embeds():
 
     #Create the "Playing" Embed, has a variation for Now Playing and Started Playing
     async def CreateEmbedPlaying(self, interaction: discord.Interaction, song: dict, started: bool):
-        await interaction.channel.send(content = "Thinking...")
+        message = await interaction.channel.send(content = "Thinking...")
+        await message.delete()
         self.started = started
         if started:
             title = f":notes: Started Playing :notes:"
@@ -187,7 +191,7 @@ class embeds():
             current = (g.variables["timelapsed"] / song["dur"]) * 100
             # First two arguments are mandatory
             bardata = progressBar.splitBar(self.total, int(current), size = 9)
-            self.embed.add_field(name = "Time Elapsed", value = f"{bardata[0]}```{datetime.timedelta(seconds=g.variables['timelapsed'])}-{datetime.timedelta(seconds=song['dur'])}```", inline = False)
+            self.embed.add_field(name = "Time Elapsed", value = f"{bardata[0]}-{datetime.timedelta(seconds=g.variables['timelapsed'])}-{datetime.timedelta(seconds=song['dur'])}", inline = False)
             # self.embed.add_field(name= "Time Left", value = datetime.timedelta(seconds=song["dur"] - g.variables["timelapsed"]))
         self.embed.add_field(name= "Volume", value = self.volumelabels[Pl.volume], inline = False)
         self.embed.set_image(url = song["coverart"])
@@ -225,7 +229,8 @@ class embeds():
 
     # Create Embed for Addition / Info about a song
     async def CreateEmbedAdded(self, interaction: discord.Interaction, song: dict, added: bool): 
-        await interaction.channel.send("Thinking...")
+        message = await interaction.channel.send("Thinking...")
+        await message.delete()
         if added:
             title = "Added A Song"
         else:
@@ -361,9 +366,10 @@ class Player():
             self.paused =  False
             self.playing = False
             self.volume = 3
+            self.timestamp = "00:00:00.00"
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         def play():
-            self.voiceclient.play(discord.FFmpegPCMAudio(source=self.queue[0]["filename"]))
+            self.voiceclient.play(discord.FFmpegPCMAudio(source=self.queue[0]["filename"], before_options=f"-ss {self.timestamp}"))
             self.voiceclient.source = discord.PCMVolumeTransformer(self.voiceclient.source, volume = self.volume / 10)
         self.voiceclient = client.voice_clients[0]
         if self.voiceclient.is_playing() and not self.paused:
@@ -372,7 +378,8 @@ class Player():
             self.paused = False
             self.playing = True
             g.variables["nowplaying"] = self.queue[0]
-            g.variables["timelapsed"] = 0
+            self.timestamp = self.queue[0]["starttime"]
+            g.variables["timelapsed"] = self.timestamp
             logs.info("Player Started!")
             await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
             await Em.CreateEmbedPlaying(interaction, self.queue[0], True)
@@ -415,7 +422,7 @@ class Player():
         #Check if there are still songs left in the queue and continue or stop and leave the channel
         if self.queue != []:
             logs.info("Queue not empty moving on to next song")
-            g.variables["timelapsed"] = 0
+            g.variables["timelapsed"] = self.timestamp
             await self.player(interaction, client)
             await self.queuereorder()
             print(type(self.queue), type(Pl.queue))
@@ -429,6 +436,8 @@ class Player():
             await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
             print(f"{type(self.queue)} {len(self.queue)} | {type(Pl.queue)} {len(self.queue)}")
             return
+        
+
     #stop - stops the currently playing song and clears the queue
     async def stop(self):
         logs.info("Stopped")
@@ -437,21 +446,21 @@ class Player():
         self.thread.cancel()
         await self.voiceclient.disconnect()
         await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
-        g.variables["timelapsed"] = 0
+        g.variables["timelapsed"] = self.timestamp
     #stop - stops the currently playing song and removes it from the queue before starting the player again
     async def skip(self, interaction, client):
         logs.info("Skipped")
         self.voiceclient.stop()
         self.queue.pop(0)
         self.thread.cancel()
-        g.variables["timelapsed"] = 0
+        g.variables["timelapsed"] = self.timestamp
         await self.player(interaction, client)
     #restart - stops the current song and starts player again from the same song
     async def restart(self, interaction, client):
         logs.info("Restarted")
         self.voiceclient.stop()
         self.thread.cancel()
-        g.variables["timelapsed"] = 0
+        g.variables["timelapsed"] = self.timestamp
         await self.player(interaction, client)
     #pause - pause playing and update paused so waitforend doesnt keep counting
     async def pause(self):
@@ -464,6 +473,15 @@ class Player():
         self.paused = False
         self.voiceclient.resume()
     
+    async def queuechange(self):
+        logs.info("Stopping and Saving time")
+        self.timestamp = g.variables["timelapsed"]
+        self.stop(self)
+
+    async def queuechangeplay(self, interaction):
+        logs.info("starting from where we left off")
+        self.player(interaction, self.client)
+
     async def volume_up(self):
         self.volume += 1
         self.voiceclient.source.volume = self.volume / 10
@@ -476,7 +494,7 @@ class Player():
 #Commands
 
 #PlayCommand - Takes a Query, and plays it on discord
-async def PlayCommand(interaction: discord.Interaction, query: str, client: discord.Client):
+async def PlayCommand(interaction: discord.Interaction, query: str, starttime:str|None, client: discord.Client):
     #Prepare for downloading a playlist
     async def DownPrep(interaction: discord.Interaction, queries: list):
         #This function will find out how many threads are needed for a playlist
@@ -564,6 +582,7 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                 "dur": data['duration'],
                 "id": len(Pl.queue),
                 "userfile": False,
+                "starttime": starttime,
             }
             try:
                 song["coverart"] = data["thumbnail"]
@@ -586,8 +605,10 @@ async def PlayCommand(interaction: discord.Interaction, query: str, client: disc
                 "dur": result['dur'],
                 "id": len(Pl.queue),
                 "userfile": False,
+                "starttime": starttime,
             }
         await interaction.edit_original_response(content = "Adding the song to the queue...")
+        await interaction.delete_original_response()
         Pl.queue.append(song)
         await Pl.player(interaction, client)
 
@@ -675,6 +696,32 @@ async def QueueCommand(interaction: discord.Interaction):
         await interaction.response.send_message("The queue is Empty!")
         return page
     
+
+#ChangeQueueCommand - Change current queue
+async def ChangeQueueCommand(interaction: discord.Interaction, client, index, cont):
+    global Pl
+    logs.info(f"Changing Queue to queue at {index} Requested by {interaction.user}")
+    queueindex = index
+    Pl.queuechange()
+    if queues[queueindex] == None:
+        await interaction.response.send_message("There isn't a queue at that index!")
+    else:
+        Pl = queues[queueindex]
+    if Pl.queue != [] and cont == True:
+        Pl.queuechangeplay(interaction)
+
+
+#CreateQueueCommand - Create a new queue
+async def CreateQueueCommand(interaction: discord.Interaction, client, change):
+    global queue
+    
+
+async def Listqueues(interaction: discord.Interaction):
+    await interaction.response.send_message("Thinking...")
+    for i in queues:
+        await interaction.channel.send(i.queue[0]["name"])
+
+
 
 #ShuffleCommand - Shuffle the queue
 async def ShuffleCommand(interaction: discord.Interaction):

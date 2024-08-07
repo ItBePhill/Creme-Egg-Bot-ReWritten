@@ -16,7 +16,7 @@ if __name__ == "__main__":
    \___|_| \___|_|_|_\___| |___\__, \__, | |___/\___/\__| |_|_\___|\_/\_/|_| |_|\__|\__\___|_||_|  
                                 |___/|___/                                                         
                              
-    \nVersion: R0.5""")
+    \nVersion: Unstable 0.6""")
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
     botprocess.start()
 
