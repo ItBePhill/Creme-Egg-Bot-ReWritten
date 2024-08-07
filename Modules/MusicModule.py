@@ -31,8 +31,8 @@ def running():
 def init(client: discord.Client):
     global Pl, Em
     logs.info("Initialising Music Module")
-    Pl = queues[0] = Player(client)
-
+    queues[0] = Player(client)
+    Pl = queues[0]
     Em = embeds()
 first = True
 genericthumburl = "https://raw.githubusercontent.com/ItBePhill/Creme-Egg-Bot-ReWritten/main/Songs/Images/generic-thumb.png"
