@@ -88,7 +88,6 @@ if CremeModules.MusicModule.enabled == True:
   @app_commands.describe(
       query = "The song you want to play",
       starttime = "The time to start the song at in seconds P.S. (by default will be set to 0)",
-      auto_play = "Auto Play the current song in the queue when you switch"
   )
   async def PlayCommand(interaction: discord.Interaction, query: str, starttime: float|None):
     if starttime == None:
