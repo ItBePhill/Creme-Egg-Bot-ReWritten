@@ -366,7 +366,7 @@ class Player():
             self.paused =  False
             self.playing = False
             self.volume = 3
-            self.timestamp = "00:00:00.00"
+            self.timestamp = 0
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         def play():
             self.voiceclient.play(discord.FFmpegPCMAudio(source=self.queue[0]["filename"], before_options=f"-ss {self.timestamp}"))
@@ -379,7 +379,7 @@ class Player():
             self.playing = True
             g.variables["nowplaying"] = self.queue[0]
             self.timestamp = self.queue[0]["starttime"]
-            g.variables["timelapsed"] = self.timestamp
+            g.variables["timelapsed"] = self.queue[0]["starttime"]
             logs.info("Player Started!")
             await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
             await Em.CreateEmbedPlaying(interaction, self.queue[0], True)
@@ -422,7 +422,7 @@ class Player():
         #Check if there are still songs left in the queue and continue or stop and leave the channel
         if self.queue != []:
             logs.info("Queue not empty moving on to next song")
-            g.variables["timelapsed"] = self.timestamp
+            g.variables["timelapsed"] = self.queue[0]["starttime"]
             await self.player(interaction, client)
             await self.queuereorder()
             print(type(self.queue), type(Pl.queue))
@@ -446,21 +446,21 @@ class Player():
         self.thread.cancel()
         await self.voiceclient.disconnect()
         await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
-        g.variables["timelapsed"] = self.timestamp
+        g.variables["timelapsed"] = 0
     #stop - stops the currently playing song and removes it from the queue before starting the player again
     async def skip(self, interaction, client):
         logs.info("Skipped")
         self.voiceclient.stop()
         self.queue.pop(0)
         self.thread.cancel()
-        g.variables["timelapsed"] = self.timestamp
+        g.variables["timelapsed"] = self.queue[0]["starttime"]
         await self.player(interaction, client)
     #restart - stops the current song and starts player again from the same song
     async def restart(self, interaction, client):
         logs.info("Restarted")
         self.voiceclient.stop()
         self.thread.cancel()
-        g.variables["timelapsed"] = self.timestamp
+        g.variables["timelapsed"] = self.queue[0]["starttime"]
         await self.player(interaction, client)
     #pause - pause playing and update paused so waitforend doesnt keep counting
     async def pause(self):
@@ -696,32 +696,32 @@ async def QueueCommand(interaction: discord.Interaction):
         await interaction.response.send_message("The queue is Empty!")
         return page
     
+# --------------------------------------------- Not ready for stable ---------------------------------------------------
+# #ChangeQueueCommand - Change current queue
+# async def ChangeQueueCommand(interaction: discord.Interaction, client, index, cont):
+#     global Pl
+#     logs.info(f"Changing Queue to queue at {index} Requested by {interaction.user}")
+#     queueindex = index
+#     Pl.queuechange()
+#     if queues[queueindex] == None:
+#         await interaction.response.send_message("There isn't a queue at that index!")
+#     else:
+#         Pl = queues[queueindex]
+#     if Pl.queue != [] and cont == True:
+#         Pl.queuechangeplay(interaction)
 
-#ChangeQueueCommand - Change current queue
-async def ChangeQueueCommand(interaction: discord.Interaction, client, index, cont):
-    global Pl
-    logs.info(f"Changing Queue to queue at {index} Requested by {interaction.user}")
-    queueindex = index
-    Pl.queuechange()
-    if queues[queueindex] == None:
-        await interaction.response.send_message("There isn't a queue at that index!")
-    else:
-        Pl = queues[queueindex]
-    if Pl.queue != [] and cont == True:
-        Pl.queuechangeplay(interaction)
 
-
-#CreateQueueCommand - Create a new queue
-async def CreateQueueCommand(interaction: discord.Interaction, client, change):
-    global queue
+# #CreateQueueCommand - Create a new queue
+# async def CreateQueueCommand(interaction: discord.Interaction, client, change):
+#     global queue
     
 
-async def Listqueues(interaction: discord.Interaction):
-    await interaction.response.send_message("Thinking...")
-    for i in queues:
-        await interaction.channel.send(i.queue[0]["name"])
+# async def Listqueues(interaction: discord.Interaction):
+#     await interaction.response.send_message("Thinking...")
+#     for i in queues:
+#         await interaction.channel.send(i.queue[0]["name"])
 
-
+# ----------------------------------------------------------------------------------------------------------------------
 
 #ShuffleCommand - Shuffle the queue
 async def ShuffleCommand(interaction: discord.Interaction):

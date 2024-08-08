@@ -8,7 +8,7 @@ def StartBot(process):
 botprocess = None
 botprocess = multiprocessing.Process(target = StartBot, name = "Bot Process", daemon = True, args= [botprocess])
 if __name__ == "__main__":
-    init(convert=True)
+    init()
     logs.info(Fore.RED+"""
     ___                     ___             ___      _     ___   __      __   _ _   _              
    / __|_ _ ___ _ __  ___  | __|__ _ __ _  | _ ) ___| |_  | _ \__\ \    / / _(_) |_| |_ ___ _ _    

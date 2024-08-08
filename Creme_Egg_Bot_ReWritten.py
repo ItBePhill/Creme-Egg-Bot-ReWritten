@@ -98,23 +98,26 @@ if CremeModules.MusicModule.enabled == True:
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.QueueCommand(interaction)
 
-  @tree.command(name = "change_queue", description="Change to another queue", guild = discord.Object(id=1014812996226256927))
-  @app_commands.describe(
-      index = "Index of queue to change to",
-      continue_ = "Whether the bot will continue playing where you left off on the queue (True by default)",
-  )
-  async def ChangeQueueCommand(interaction: discord.Interaction, index: int, continue_: bool|None):
-    if continue_ == None:
-      continue_ = True
-    await CremeModules.MusicModule.ChangeQueueCommand(interaction, index, continue_)
-  @app_commands.describe(
-      change = "Whether to change to the new queue after it is created (True by default)",
-  )
-  @tree.command(name = "create_queue", description="Create a new Queue", guild = discord.Object(id=1014812996226256927))
-  async def CreateQueueCommand(interaction: discord.Interaction, change: bool|None):
-    if change == None:
-      change = True
-    await CremeModules.MusicModule.CreateQueueCommand(interaction, client, change)
+
+  # --------------------------------------------- Not ready for stable ---------------------------------------------------
+  # @tree.command(name = "change_queue", description="Change to another queue", guild = discord.Object(id=1014812996226256927))
+  # @app_commands.describe(
+  #     index = "Index of queue to change to",
+  #     continue_ = "Whether the bot will continue playing where you left off on the queue (True by default)",
+  # )
+  # async def ChangeQueueCommand(interaction: discord.Interaction, index: int, continue_: bool|None):
+  #   if continue_ == None:
+  #     continue_ = True
+  #   await CremeModules.MusicModule.ChangeQueueCommand(interaction, index, continue_)
+  # @app_commands.describe(
+  #     change = "Whether to change to the new queue after it is created (True by default)",
+  # )
+  # @tree.command(name = "create_queue", description="Create a new Queue", guild = discord.Object(id=1014812996226256927))
+  # async def CreateQueueCommand(interaction: discord.Interaction, change: bool|None):
+  #   if change == None:
+  #     change = True
+  #   await CremeModules.MusicModule.CreateQueueCommand(interaction, client, change)
+  # ----------------------------------------------------------------------------------------------------------------------
   
   @tree.command(name = "list_queues", description="list queues", guild = discord.Object(id=1014812996226256927))
   async def CreateQueueCommand(interaction: discord.Interaction, change: bool|None):
