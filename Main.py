@@ -15,9 +15,9 @@ if __name__ == "__main__":
   | (__| '_/ -_) '  \/ -_) | _|/ _` / _` | | _ \/ _ \  _| |   / -_) \/\/ / '_| |  _|  _/ -_) ' \   
    \___|_| \___|_|_|_\___| |___\__, \__, | |___/\___/\__| |_|_\___|\_/\_/|_| |_|\__|\__\___|_||_|  
                                 |___/|___/                                                         
-                             
-    \nVersion: Unstable 0.6""")
+    """)
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
+    logs.info(open("Version.txt", "r").read())
     botprocess.start()
 
 
