@@ -1,10 +1,20 @@
 import logs
 import multiprocessing
 import time
+import schedule
+import os
 from colorama import init, Fore
 def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
     runbot(process)
+# purge unlistened-to songs from the songs folder
+#unfinished
+# def Purge():
+#     songsfolder = "/Songs"
+#     print("Purging!")
+#     for i in os.listdir(songsfolder):
+#         print(i)
+
 botprocess = None
 botprocess = multiprocessing.Process(target = StartBot, name = "Bot Process", daemon = True, args= [botprocess])
 if __name__ == "__main__":
@@ -19,7 +29,12 @@ if __name__ == "__main__":
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
     logs.info(open("Version.txt", "r").read())
     botprocess.start()
+    # schedule.every().day.at("12:10").do(Purge)
 
 
     while True:
+        # schedule.run_pending()
+        # time.sleep(1)
         continue
+
+
