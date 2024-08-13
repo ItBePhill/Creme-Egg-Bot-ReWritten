@@ -97,6 +97,12 @@ if CremeModules.MusicModule.enabled == True:
   @tree.command(name = "queue", description="Show the Queue", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.QueueCommand(interaction)
+  
+  @tree.command(name = "creme_egg_wrapper", description="Show a list of the most listened to songs", guild = discord.Object(id=1014812996226256927))
+  async def QueueCommand(interaction: discord.Interaction):
+    await CremeModules.MusicModule.WrappedCommand(interaction)
+  
+
 
 
   # --------------------------------------------- Not ready for stable ---------------------------------------------------
