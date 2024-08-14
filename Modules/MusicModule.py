@@ -621,10 +621,10 @@ async def QueueCommand(interaction: discord.Interaction):
         global queuepage
         # i = button interaction, ii = command interaction
         if queuepage == len(temptemp)-1 and x == "r":
-            await i.response.send_message("you can't go forward anymore!", ephemeral=False)
+            await i.response.send_message("you can't go forward anymore!", ephemeral=True)
             return queuepage
         if queuepage == 0 and x == "l":
-            await i.response.send_message("you can't go back anymore!", ephemeral=False)
+            await i.response.send_message("you can't go back anymore!", ephemeral=True)
             return queuepage
         else:
             await i.response.send_message("Thinking...", ephemeral=False)
@@ -758,10 +758,10 @@ async def WrappedCommand(interaction: discord.Interaction):
         global wrappedpage
         # i = button interaction, ii = command interaction
         if wrappedpage == len(temptemp)-1 and x == "r":
-            await i.response.send_message("you can't go forward anymore!", ephemeral=False)
+            await i.response.send_message("you can't go forward anymore!", ephemeral=True)
             return wrappedpage
         if wrappedpage == 0 and x == "l":
-            await i.response.send_message("you can't go back anymore!", ephemeral=False)
+            await i.response.send_message("you can't go back anymore!", ephemeral=True)
             return wrappedpage
         else:
             await i.response.send_message("Thinking...", ephemeral=False)
@@ -773,7 +773,7 @@ async def WrappedCommand(interaction: discord.Interaction):
 
             embed = discord.Embed(title=f"page: {wrappedpage+1} / {len(temptemp)}")
             for i in temptemp[wrappedpage]:
-                embed.add_field(name=i[0], value = f"Title: {i[2]}\n\nChannel: {i[4]}\n\nURL: {i[3]}\n\nTimes Played:  {i[8]}\n\nDuration: {datetime.timedelta(seconds = float(i[6]))}", inline = True)
+                embed.add_field(name=i[0], value = f"Title: {i[2]}\n\nChannel: {i[4]}\n\nURL: {i[3]}\n\nTimes Played:  {i[8]}\n\nTotal Estimated Time Played: {datetime.timedelta(seconds=float(i[6])*float(i[8]))}\n\nDuration: {datetime.timedelta(seconds = float(i[6]))}", inline = True)
             embed.colour = discord.Colour.red()
             view = discord.ui.View()
             leftbutton = discord.ui.Button(emoji="⬅️")
@@ -802,7 +802,7 @@ async def WrappedCommand(interaction: discord.Interaction):
         for i in temptemp:
             logs.info(i)
         for i in temptemp[wrappedpage]:
-            embed.add_field(name=i[0], value = f"Title: {i[2]}\n\nChannel: {i[4]}\n\nURL: {i[3]}\n\nTimes Played:  {i[8]}\n\nDuration: {datetime.timedelta(seconds = float(i[6]))}", inline = True)
+            embed.add_field(name=i[0], value = f"Title: {i[2]}\n\nChannel: {i[4]}\n\nURL: {i[3]}\n\nTimes Played:  {i[8]}\n\nTotal Estimated Time Played: {datetime.timedelta(seconds=float(i[6])*float(i[8]))}\n\nDuration: {datetime.timedelta(seconds = float(i[6]))}", inline = True)
         embed.colour = discord.Colour.red()
         view = discord.ui.View()
         leftbutton = discord.ui.Button(emoji="⬅️")
