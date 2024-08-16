@@ -19,6 +19,7 @@ import spotipy
 from spotipy import SpotifyClientCredentials
 from StringProgressBar import progressBar
 import database as db
+import time
 #/Imports
 #Startup
 logs.info("Music Module Started Successfully!")
@@ -382,7 +383,7 @@ class Player():
             self.timestamp = self.queue[0]["starttime"]
             g.variables["timelapsed"] = self.queue[0]["starttime"]
             logs.info("Player Started!")
-            await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", assets = self.assets))
+            await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"by: {self.queue[0]['author']}", assets = self.assets, timestamps={"start":time.time(), "end":time.time() + self.queue[0]["dur"]}))
             await Em.CreateEmbedPlaying(interaction, self.queue[0], True)
             waitask = None
             waitask = asyncio.create_task(coro = self.waitforend(interaction, client), name = "Wait Task")
@@ -434,7 +435,7 @@ class Player():
             logs.info("Queue empty exiting player")
             self.playing = False
             self.queue = []
-            await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing", assets = self.assets))
+            await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing", state="by: Noone", assets = self.assets))
             print(f"{type(self.queue)} {len(self.queue)} | {type(Pl.queue)} {len(self.queue)}")
             return
         
@@ -446,7 +447,7 @@ class Player():
         self.queue = []
         self.thread.cancel()
         await self.voiceclient.disconnect()
-        await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing", assets = self.assets))
+        await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing", state="by: Noone", assets = self.assets))
         g.variables["timelapsed"] = 0
     #stop - stops the currently playing song and removes it from the queue before starting the player again
     async def skip(self, interaction, client):

@@ -26,7 +26,7 @@ class MyClient(discord.Client):
         # Note: When using commands.Bot instead of discord.Client, the bot will
         # maintain its own tree instead.
         self.tree = app_commands.CommandTree(self)
-        self.activity = discord.Activity(type = discord.ActivityType.listening, name = "Nothing", assets = {"large_image":"creme_egg", "small_image":"play"})
+        self.activity = discord.Activity(type = discord.ActivityType.listening, name = "Nothing", state="by: Noone", assets = {"large_image":"creme_egg", "small_image":"play"})
         self.status = discord.Status.online
 
     async def setup_hook(self):
