@@ -19,5 +19,4 @@ Logs
 if you want to create new Modules for the bot all you need to do is copy BaseModule.py and delete the functions already on it, and then write discord commands as usual and add a command in the Creme_Egg_Bot_ReWritten.py file
 
 
-Unstable Branch May contain bugs
-
+Unstable branch may contain bugs
