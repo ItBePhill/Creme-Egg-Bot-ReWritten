@@ -65,7 +65,7 @@ class embeds():
         self.total = 100
         self.started = None
     async def callback(self, i: discord.Interaction, x: str):
-        await i.response.send_message(content =  "Thinking...", ephemeral=True)
+        await i.response.send_message(content =  "Thinking...", ephemeral=False)
         await i.delete_original_response()
         match x:
             case "sh":
@@ -366,7 +366,7 @@ class Player():
             self.paused =  False
             self.playing = False
             self.volume = 3
-            self.timestamp = "00:00:00.00"
+            self.timestamp = 0
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         def play():
             self.voiceclient.play(discord.FFmpegPCMAudio(source=self.queue[0]["filename"], before_options=f"-ss {self.timestamp}"))
@@ -379,7 +379,7 @@ class Player():
             self.playing = True
             g.variables["nowplaying"] = self.queue[0]
             self.timestamp = self.queue[0]["starttime"]
-            g.variables["timelapsed"] = self.timestamp
+            g.variables["timelapsed"] = self.queue[0]["starttime"]
             logs.info("Player Started!")
             await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
             await Em.CreateEmbedPlaying(interaction, self.queue[0], True)
@@ -422,7 +422,7 @@ class Player():
         #Check if there are still songs left in the queue and continue or stop and leave the channel
         if self.queue != []:
             logs.info("Queue not empty moving on to next song")
-            g.variables["timelapsed"] = self.timestamp
+            g.variables["timelapsed"] = self.queue[0]["starttime"]
             await self.player(interaction, client)
             await self.queuereorder()
             print(type(self.queue), type(Pl.queue))
@@ -446,21 +446,21 @@ class Player():
         self.thread.cancel()
         await self.voiceclient.disconnect()
         await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
-        g.variables["timelapsed"] = self.timestamp
+        g.variables["timelapsed"] = 0
     #stop - stops the currently playing song and removes it from the queue before starting the player again
     async def skip(self, interaction, client):
         logs.info("Skipped")
         self.voiceclient.stop()
         self.queue.pop(0)
         self.thread.cancel()
-        g.variables["timelapsed"] = self.timestamp
+        g.variables["timelapsed"] = self.queue[0]["starttime"]
         await self.player(interaction, client)
     #restart - stops the current song and starts player again from the same song
     async def restart(self, interaction, client):
         logs.info("Restarted")
         self.voiceclient.stop()
         self.thread.cancel()
-        g.variables["timelapsed"] = self.timestamp
+        g.variables["timelapsed"] = self.queue[0]["starttime"]
         await self.player(interaction, client)
     #pause - pause playing and update paused so waitforend doesnt keep counting
     async def pause(self):
@@ -612,39 +612,39 @@ async def PlayCommand(interaction: discord.Interaction, query: str, starttime:st
         Pl.queue.append(song)
         await Pl.player(interaction, client)
 
-page = 0
+queuepage = 0
 #QueueCommand - Get and show the queue, in a nice format
 async def QueueCommand(interaction: discord.Interaction):
     logs.info(f"queue command was called! by: {interaction.user}")
-    global page
+    global queuepage
     async def callback(i, x, ii):
-        global page
+        global queuepage
         # i = button interaction, ii = command interaction
-        if page == len(temptemp)-1 and x == "r":
+        if queuepage == len(temptemp)-1 and x == "r":
             await i.response.send_message("you can't go forward anymore!", ephemeral=True)
-            return page
-        if page == 0 and x == "l":
+            return queuepage
+        if queuepage == 0 and x == "l":
             await i.response.send_message("you can't go back anymore!", ephemeral=True)
-            return page
+            return queuepage
         else:
-            await i.response.send_message("Thinking...", ephemeral=True)
+            await i.response.send_message("Thinking...", ephemeral=False)
             await i.delete_original_response()
             if x == "r":
-                page += 1
+                queuepage += 1
             else:
-                page -= 1
+                queuepage -= 1
 
-            embed = discord.Embed(title=f"Page: {page+1} / {len(temptemp)}")
-            for i in temptemp[page]:
-                embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nChannel: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
+            embed = discord.Embed(title=f"page: {queuepage+1} / {len(temptemp)}")
+            for i in temptemp[queuepage]:
+                embed.add_field(name=i["id"], value = f"Title: {i['title']}\n\nChannel: {i['author']}\n\nURL: {i['url']}\n\nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
             totalp = 0
             totalq = 0
-            for i in temptemp[page]:
+            for i in temptemp[queuepage]:
                 totalp += i["dur"]
             for i in Pl.queue:
                 totalq += i["dur"]
             embed.colour = discord.Colour.red()
-            embed.add_field(name=f"Total Page Length", value = datetime.timedelta(seconds =  totalp))
+            embed.add_field(name=f"Total page Length", value = datetime.timedelta(seconds =  totalp))
             embed.add_field(name=f"Total queue Length", value =  datetime.timedelta(seconds = totalq))
             view = discord.ui.View()
             leftbutton = discord.ui.Button(emoji="⬅️")
@@ -654,34 +654,34 @@ async def QueueCommand(interaction: discord.Interaction):
             view.add_item(leftbutton)
             view.add_item(rightbutton)
             await ii.edit_original_response(embed=embed, view = view)
-            return page
+            return queuepage
 
     if Pl.queue != []:
-        await interaction.response.send_message("Thinking...", ephemeral=True)
-        pages = len(Pl.queue) / 10  # Amount of Items Per Page
-        if pages == 0:
-            pages = 1
-        elif pages % 1 != 0:
-            pages = math.floor(pages) + 1
-        logs.info(f"The amount of pages we need is: {pages}")
-        temp = np.array_split(Pl.queue, pages)
+        await interaction.response.send_message("Thinking...", ephemeral=False)
+        queuepages = len(Pl.queue) / 10  # Amount of Items Per queuepage
+        if queuepages == 0:
+            queuepages = 1
+        elif queuepages % 1 != 0:
+            queuepages = math.floor(queuepages) + 1
+        logs.info(f"The amount of queuepages we need is: {queuepages}")
+        temp = np.array_split(Pl.queue, queuepages)
         temptemp = []
         for i in temp:
             temptemp.append(i.tolist())
-        logs.info(page)
-        embed = discord.Embed(title=f"Page: {page+1} / {len(temptemp)}")
+        logs.info(queuepage)
+        embed = discord.Embed(title=f"queuepage: {queuepage+1} / {len(temptemp)}")
         for i in temptemp:
             logs.info(i)
-        for i in temptemp[page]:
-            embed.add_field(name=i["id"], value = f"Title: {i['title']}/n/nChannel: {i['author']}/n/nURL: {i['url']}/n/nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
+        for i in temptemp[queuepage]:
+            embed.add_field(name=i["id"], value = f"Title: {i['title']}\n\nChannel: {i['author']}\n\nURL: {i['url']}\n\nDuration: {datetime.timedelta(seconds = i['dur'])}", inline = True)
         totalp = 0
         totalq = 0
-        for i in temptemp[page]:
+        for i in temptemp[queuepage]:
             totalp += i["dur"]
         for i in Pl.queue:
             totalq += i["dur"]
         embed.colour = discord.Colour.red()
-        embed.add_field(name=f"Total Page Length", value = datetime.timedelta(seconds =  totalp))
+        embed.add_field(name=f"Total queuepage Length", value = datetime.timedelta(seconds =  totalp))
         embed.add_field(name=f"Total queue Length", value =  datetime.timedelta(seconds = totalq))
         view = discord.ui.View()
         leftbutton = discord.ui.Button(emoji="⬅️")
@@ -691,37 +691,37 @@ async def QueueCommand(interaction: discord.Interaction):
         view.add_item(leftbutton)
         view.add_item(rightbutton)
         await interaction.edit_original_response(embed=embed, view = view)
-        return page
+        return queuepage
     else:
         await interaction.response.send_message("The queue is Empty!")
-        return page
+        return queuepage
+    
+# --------------------------------------------- Not ready for stable ---------------------------------------------------
+# #ChangeQueueCommand - Change current queue
+# async def ChangeQueueCommand(interaction: discord.Interaction, client, index, cont):
+#     global Pl
+#     logs.info(f"Changing Queue to queue at {index} Requested by {interaction.user}")
+#     queueindex = index
+#     Pl.queuechange()
+#     if queues[queueindex] == None:
+#         await interaction.response.send_message("There isn't a queue at that index!")
+#     else:
+#         Pl = queues[queueindex]
+#     if Pl.queue != [] and cont == True:
+#         Pl.queuechangeplay(interaction)
+
+
+# #CreateQueueCommand - Create a new queue
+# async def CreateQueueCommand(interaction: discord.Interaction, client, change):
+#     global queue
     
 
-#ChangeQueueCommand - Change current queue
-async def ChangeQueueCommand(interaction: discord.Interaction, client, index, cont):
-    global Pl
-    logs.info(f"Changing Queue to queue at {index} Requested by {interaction.user}")
-    queueindex = index
-    Pl.queuechange()
-    if queues[queueindex] == None:
-        await interaction.response.send_message("There isn't a queue at that index!")
-    else:
-        Pl = queues[queueindex]
-    if Pl.queue != [] and cont == True:
-        Pl.queuechangeplay(interaction)
+# async def Listqueues(interaction: discord.Interaction):
+#     await interaction.response.send_message("Thinking...")
+#     for i in queues:
+#         await interaction.channel.send(i.queue[0]["name"])
 
-
-#CreateQueueCommand - Create a new queue
-async def CreateQueueCommand(interaction: discord.Interaction, client, change):
-    global queue
-    
-
-async def Listqueues(interaction: discord.Interaction):
-    await interaction.response.send_message("Thinking...")
-    for i in queues:
-        await interaction.channel.send(i.queue[0]["name"])
-
-
+# ----------------------------------------------------------------------------------------------------------------------
 
 #ShuffleCommand - Shuffle the queue
 async def ShuffleCommand(interaction: discord.Interaction):
@@ -747,7 +747,76 @@ async def ShuffleCommand(interaction: discord.Interaction):
     print(f"Shuffle took: {datetime.timedelta(seconds=t2-t1)}")
     
         
+wrappedpage = 0
+#Wrapped Command - List most listened to songs
+async def WrappedCommand(interaction: discord.Interaction):
+    database = db.song.load()
+    database.sort(key=lambda i: i[8] , reverse=True)
+    logs.info(f"wrapped command was called! by: {interaction.user}")
+    global wrappedpage
+    async def callback(i, x, ii):
+        global wrappedpage
+        # i = button interaction, ii = command interaction
+        if wrappedpage == len(temptemp)-1 and x == "r":
+            await i.response.send_message("you can't go forward anymore!", ephemeral=True)
+            return wrappedpage
+        if wrappedpage == 0 and x == "l":
+            await i.response.send_message("you can't go back anymore!", ephemeral=True)
+            return wrappedpage
+        else:
+            await i.response.send_message("Thinking...", ephemeral=False)
+            await i.delete_original_response()
+            if x == "r":
+                wrappedpage += 1
+            else:
+                wrappedpage -= 1
 
+            embed = discord.Embed(title=f"page: {wrappedpage+1} / {len(temptemp)}")
+            for i in temptemp[wrappedpage]:
+                embed.add_field(name=i[0], value = f"Title: {i[2]}\n\nChannel: {i[4]}\n\nURL: {i[3]}\n\nTimes Played:  {i[8]}\n\nTotal Estimated Time Played: {datetime.timedelta(seconds=float(i[6])*float(i[8]))}\n\nDuration: {datetime.timedelta(seconds = float(i[6]))}", inline = True)
+            embed.colour = discord.Colour.red()
+            view = discord.ui.View()
+            leftbutton = discord.ui.Button(emoji="⬅️")
+            rightbutton = discord.ui.Button(emoji="➡️")
+            leftbutton.callback = lambda i: callback(i, "l", interaction)
+            rightbutton.callback = lambda i: callback(i, "r", interaction)
+            view.add_item(leftbutton)
+            view.add_item(rightbutton)
+            await ii.edit_original_response(embed=embed, view = view)
+            return wrappedpage
+
+    if database != []:
+        await interaction.response.send_message("Thinking...", ephemeral=False)
+        wrappedpages = len(database) / 10  # Amount of Items Per wrappedpage
+        if wrappedpages == 0:
+            wrappedpages = 1
+        elif wrappedpages % 1 != 0:
+            wrappedpages = math.floor(wrappedpages) + 1
+        logs.info(f"The amount of pages we need is: {wrappedpages}")
+        temp = np.array_split(database, wrappedpages)
+        temptemp = []
+        for i in temp:
+            temptemp.append(i.tolist())
+        logs.info(wrappedpage)
+        embed = discord.Embed(title=f"page: {wrappedpage+1} / {len(temptemp)}")
+        for i in temptemp:
+            logs.info(i)
+        for i in temptemp[wrappedpage]:
+            embed.add_field(name=i[0], value = f"Title: {i[2]}\n\nChannel: {i[4]}\n\nURL: {i[3]}\n\nTimes Played:  {i[8]}\n\nTotal Estimated Time Played: {datetime.timedelta(seconds=float(i[6])*float(i[8]))}\n\nDuration: {datetime.timedelta(seconds = float(i[6]))}", inline = True)
+        embed.colour = discord.Colour.red()
+        view = discord.ui.View()
+        leftbutton = discord.ui.Button(emoji="⬅️")
+        rightbutton = discord.ui.Button(emoji="➡️")
+        leftbutton.callback = lambda i: callback(i, "l", interaction)
+        rightbutton.callback = lambda i: callback(i, "r", interaction)
+        view.add_item(leftbutton)
+        view.add_item(rightbutton)
+        await interaction.edit_original_response(embed=embed, view = view)
+        return wrappedpage
+    else:
+        await interaction.response.send_message("The database is Empty!")
+        return wrappedpage
+    
 
 
 
