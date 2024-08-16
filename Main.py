@@ -3,17 +3,41 @@ import multiprocessing
 import time
 import schedule
 import os
+import database as db
+import time
+import sqlite3 as sql
+import sys
 from colorama import init, Fore
 def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
     runbot(process)
 # purge unlistened-to songs from the songs folder
 #unfinished
-# def Purge():
-#     songsfolder = "/Songs"
-#     print("Purging!")
-#     for i in os.listdir(songsfolder):
-#         print(i)
+def Purge():
+    botprocess.kill()
+    database = db.song.load()
+    logs.info("Purging!")
+    for song in database:
+        if song[9] == 1:
+            timesince = time.time() - song[7]
+            logs.info(song[2])
+            logs.info(timesince)
+            if timesince < 0:
+                logs.error(f"Last played time is in the future: {time.time() - song[7]}")
+            elif timesince >= 2628000: #month in seconds
+                connection = sql.connect("songs.db")
+                cursor = connection.cursor()
+                try:
+                    cursor.execute('UPDATE SONGS SET "cached" = ? WHERE "id" = ?', ("0", int(song[0])))
+                    connection.commit()   
+                    connection.close()             
+                except Exception as e:
+                    logs.error(e)
+                os.remove(song[1])
+    os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
+                
+
+
 
 botprocess = None
 botprocess = multiprocessing.Process(target = StartBot, name = "Bot Process", daemon = True, args= [botprocess])
@@ -29,12 +53,12 @@ if __name__ == "__main__":
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
     logs.info(open("Version.txt", "r").read())
     botprocess.start()
-    # schedule.every().day.at("12:10").do(Purge)
+    schedule.every().day.at("23:00").do(Purge)
 
 
     while True:
-        # schedule.run_pending()
-        # time.sleep(1)
+        schedule.run_pending()
+        time.sleep(1)
         continue
 
 

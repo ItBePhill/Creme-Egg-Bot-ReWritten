@@ -367,6 +367,7 @@ class Player():
             self.playing = False
             self.volume = 3
             self.timestamp = 0
+            self.assets = {"large_image":"creme_egg", "small_image":"play"}
     async def player(self, interaction: discord.Interaction, client: discord.Client):
         def play():
             self.voiceclient.play(discord.FFmpegPCMAudio(source=self.queue[0]["filename"], before_options=f"-ss {self.timestamp}"))
@@ -381,7 +382,7 @@ class Player():
             self.timestamp = self.queue[0]["starttime"]
             g.variables["timelapsed"] = self.queue[0]["starttime"]
             logs.info("Player Started!")
-            await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", details = "I don't know how you've seen this lol"))
+            await client.change_presence(status = discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = self.queue[0]["title"], state = f"🎵{self.queue[0]['title']} || {self.queue[0]['author']}🎵", assets = self.assets))
             await Em.CreateEmbedPlaying(interaction, self.queue[0], True)
             waitask = None
             waitask = asyncio.create_task(coro = self.waitforend(interaction, client), name = "Wait Task")
@@ -433,7 +434,7 @@ class Player():
             logs.info("Queue empty exiting player")
             self.playing = False
             self.queue = []
-            await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
+            await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing", assets = self.assets))
             print(f"{type(self.queue)} {len(self.queue)} | {type(Pl.queue)} {len(self.queue)}")
             return
         
@@ -445,7 +446,7 @@ class Player():
         self.queue = []
         self.thread.cancel()
         await self.voiceclient.disconnect()
-        await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing"))
+        await self.client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name="Nothing", assets = self.assets))
         g.variables["timelapsed"] = 0
     #stop - stops the currently playing song and removes it from the queue before starting the player again
     async def skip(self, interaction, client):

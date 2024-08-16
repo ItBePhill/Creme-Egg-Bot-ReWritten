@@ -1,3 +1,3 @@
-import database as db
+import Main
 
-db.song.load()
+Main.Purge()

@@ -52,6 +52,7 @@ class song():
         cursor.execute('UPDATE SONGS SET "last_played" = ? WHERE "id" = ?', (int(time.time()), int(index)))
         logs.info(f'Updating Times PLayed to {timesplayed+1}')
         cursor.execute('UPDATE SONGS SET "times_played" = ? WHERE "id" =  ?', (int(timesplayed+1), int(index)))
+        cursor.execute('UPDATE SONGS SET "cached" = ? WHERE "id" =  ?', (1, int(index)))
         connection.commit()
         logs.info("Successfully updated song... returning the song and closing the database")
         record = cursor.execute('SELECT * FROM songs WHERE "id" = ?', [int(index)])
@@ -62,7 +63,9 @@ class song():
         
         cached = record[9]
         if cached == 0:
+            connection.close()
             return None
+        
         else:
             endsong = {
                 "filename": record[1],
@@ -72,6 +75,7 @@ class song():
                 "coverart": record[5],
                 "dur": record[6],
             }
+            connection.close()
             return endsong
     @classmethod
     def load(self):
@@ -82,6 +86,7 @@ class song():
         returndatabase = []
         for i in database:
             returndatabase.append(i)
+        connection.close()
         return returndatabase
             
 
