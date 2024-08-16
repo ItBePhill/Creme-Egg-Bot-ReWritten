@@ -1,7 +1,7 @@
 # Creme-Egg-Bot-ReWritten
 A Modular Discord Bot for playing music and keeping times
 
-Exclaimer:
+Disclaimer:
 Won't work unless heavily edited first as it is made to be a personal project used by me and my friends
 but if you want you can use the code or rewrite it for your own purposes
 
