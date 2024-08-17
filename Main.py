@@ -14,26 +14,28 @@ def StartBot(process):
 # purge unlistened-to songs from the songs folder
 #unfinished
 def Purge():
+    logs.warn("Killing Bot Process!")
     botprocess.kill()
     database = db.song.load()
-    logs.info("Purging!")
+    logs.warn("Purging!")
     for song in database:
         if song[9] == 1:
             timesince = time.time() - song[7]
-            logs.info(song[2])
-            logs.info(timesince)
+            logs.info(f"Checking: {song[2]}\n({timesince})")
             if timesince < 0:
                 logs.error(f"Last played time is in the future: {time.time() - song[7]}")
             elif timesince >= 2628000: #month in seconds
                 connection = sql.connect("songs.db")
                 cursor = connection.cursor()
                 try:
-                    cursor.execute('UPDATE SONGS SET "cached" = ? WHERE "id" = ?', ("0", int(song[0])))
+                    logs.warn(f"Purging: {song[2]}")
+                    cursor.execute('UPDATE SONGS SET "cached" = ? WHERE "id" = ?', (0, int(song[0])))
                     connection.commit()   
                     connection.close()             
                 except Exception as e:
                     logs.error(e)
                 os.remove(song[1])
+    logs.warn("Restarting Main.py")
     os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
                 
 
