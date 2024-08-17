@@ -2,7 +2,7 @@
 import logs
 import discord
 import os
-import json
+import database as db
 logs.info("Movie Module Started Successfully!")
 enabled = True
 def running():
@@ -35,14 +35,8 @@ async def ShowsCommand(interaction: discord.Interaction):
                     newentry["episode"] = self.episode.value
                     newentry["time"] = f"{self.hours.value}:{self.minutes.value}:{self.seconds.value}"
 
-                    logs.info(f"Deleting {entry['name']}.json")
-                    os.remove(f"{os.getcwd()}//Json//{entry['name']}.json")
-                    logs.info(f"Creating {newentry['name']}.json")
-                    with open(f"{os.getcwd()}//Json//{newentry['name']}.json", "w") as f:
-                        json.dump(newentry, f)
-                        f.close()
-                        
-
+                    db.ShowData.DB("u", newentry)
+                    
                     embed = discord.Embed(title = f"New Options for: {entry['name']}")
                     embed.add_field(name = "Name", value = newentry["name"])
                     embed.add_field(name = "Episode", value = newentry["episode"])
@@ -66,14 +60,8 @@ async def ShowsCommand(interaction: discord.Interaction):
         selectionbox =  discord.ui.Select(min_values=1, max_values=1)
         selectionbox.callback = lambda i: selected(selectionbox, i, interaction)
         dicts = []
-        x = 0
-        for i in os.listdir(f"{os.getcwd()}/Json"):
-            with open(os.path.join(f"{os.getcwd()}//Json", i), "r") as f:
-                data = json.load(f)
-                dicts.append(data)
-            x+=1
-            
-        
+        dicts = db.ShowData.load()
+        logs.info(dicts)
         x = 0
         for i in dicts:
             selectionbox.add_option(label = i["name"],  value = str(x))
@@ -98,11 +86,9 @@ async def ShowsCommand(interaction: discord.Interaction):
                 newentry["episode"] = self.episode.value
                 newentry["time"] = f"{self.hours.value}:{self.minutes.value}:{self.seconds.value}"
                 logs.info(f"Creating {newentry['name']}.json")
-                with open(f"{os.getcwd()}//Json//{newentry['name']}.json", "w") as f:
-                    json.dump(newentry, f)
-                    f.close()
-                    
-
+                
+                db.ShowData.DB("a", newentry)
+                
                 embed = discord.Embed(title = f"Adding: {newentry['name']}")
                 embed.add_field(name = "Name", value = newentry["name"])
                 embed.add_field(name = "Episode", value = newentry["episode"])
@@ -129,13 +115,8 @@ async def ShowsCommand(interaction: discord.Interaction):
         selectionbox =  discord.ui.Select(min_values=1, max_values=1)
         selectionbox.callback = lambda i: selected(selectionbox, i, interaction)
         dicts = []
-        x = 0
-        for i in os.listdir(f"{os.getcwd()}//Json"):
-            with open(os.path.join(f"{os.getcwd()}//Json", i), "r") as f:
-                data = json.load(f)
-                dicts.append(data)
-            x+=1
-        
+        dicts = db.ShowData.load()
+        logs.info(dicts)
         x = 0
         for i in dicts:
             selectionbox.add_option(label = i["name"],  value = str(x))
@@ -158,8 +139,6 @@ async def ShowsCommand(interaction: discord.Interaction):
             await ii.edit_original_response(embed = embed, view = None)
 
             message = await ii.channel.send(f"Removing... {entry['name']}")
-            logs.info(f"Removing {entry['name']}.json")
-            os.remove(f"{os.getcwd()}//Json//{entry['name']}.json")
             await message.edit(content = f"Removed... {entry['name']}", embed = None, view = None)
 
         await i.response.send_message("Thinking...", ephemeral=True)
@@ -169,13 +148,8 @@ async def ShowsCommand(interaction: discord.Interaction):
         selectionbox =  discord.ui.Select(min_values=1, max_values=1)
         selectionbox.callback = lambda i: selected(selectionbox, i, interaction)
         dicts = []
-        x = 0
-        for i in os.listdir(f"{os.getcwd()}//Json"):
-            with open(os.path.join(f"{os.getcwd()}//Json", i), "r") as f:
-                data = json.load(f)
-                dicts.append(data)
-            x+=1
-        
+        dicts = db.ShowData.load()
+        logs.info(dicts)
         x = 0
         for i in dicts:
             selectionbox.add_option(label = i["name"],  value = str(x))

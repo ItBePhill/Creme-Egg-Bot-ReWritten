@@ -10,7 +10,7 @@ import sys
 from colorama import init, Fore
 def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
-    # runbot(process)
+    runbot(process)
 # purge unlistened-to songs from the songs folder
 #unfinished
 def Purge():

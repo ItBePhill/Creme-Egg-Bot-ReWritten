@@ -2,6 +2,8 @@
 import logs
 import discord
 import random
+import os
+import database
 logs.info("Base Module Started Successfully!")
 enabled = True
 def running():
@@ -24,3 +26,7 @@ async def flip(interaction: discord.Interaction, amount: int):
             await interaction.channel.send(f"{i+1} = Heads")
         else:
             await interaction.channel.send("{i+1} = Tails")
+
+async def register(interaction: discord.Interaction):
+    logs.info(f"register command was called by: {interaction.user}")
+    

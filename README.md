@@ -21,5 +21,6 @@ Logs
 
 if you want to create new Modules for the bot all you need to do is copy BaseModule.py and delete the functions already on it, and then write discord commands as usual and add a command in the Creme_Egg_Bot_ReWritten.py file
 
+database songs.db isn't just songs but also userdata and showdata, can't be arsed to change it tho
 
 Unstable branch may contain bugs
