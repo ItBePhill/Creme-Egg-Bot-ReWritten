@@ -1,1 +1,1 @@
-Version: Stable 0.7
+Version: unstable 0.8
