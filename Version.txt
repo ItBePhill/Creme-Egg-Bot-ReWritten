@@ -1,1 +1,1 @@
-Version: Stable 0.7
+Version: 0.85

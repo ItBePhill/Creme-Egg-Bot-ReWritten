@@ -91,6 +91,10 @@ if CremeModules.BaseModule.enabled == True:
   async def flip(interaction: discord.Interaction, amount: int):
      await CremeModules.BaseModule.flip(interaction, amount)
 
+  # @client.tree.command(name= "register", description="register your date of birth with the bot!", guild = discord.Object(id=1014812996226256927))
+  # async def register(interaction: discord.Interaction):
+  #    await CremeModules.BaseModule.register(interaction)
+
 if CremeModules.MovieModule.enabled == True:
   @client.tree.command(name = "shows", description="Edit / Add A Movie / Show", guild = discord.Object(id=1014812996226256927))
   async def ShowsCommand(interaction: discord.Interaction):
@@ -119,7 +123,7 @@ if CremeModules.MusicModule.enabled == True:
 
 
 
-  # --------------------------------------------- Not ready for stable ---------------------------------------------------
+  # --------------------------------------------- Not finished -----------------------------------------------------------
   # @client.tree.command(name = "change_queue", description="Change to another queue", guild = discord.Object(id=1014812996226256927))
   # @app_commands.describe(
   #     index = "Index of queue to change to",

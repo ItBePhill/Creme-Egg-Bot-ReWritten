@@ -167,79 +167,156 @@ class song():
 #         pass
 
 
-# class UserData():
-#     @classmethod
-#     def DB(self, title):
-#         connection = sql.connect("songs.db")
-#         cursor = connection.cursor()
-#         cursor.execute("CREATE TABLE IF NOT EXISTS SONGS ('id' int, 'filename' varchar(255), 'title' varchar(255), 'url' varchar(255), 'author' varchar(255), 'coverart' varchar(255), 'dur' float, 'last_played' float, 'times_played' int, 'cached' int)")
-#         titles = cursor.execute('SELECT "title" FROM SONGS')
-#         titles2 = []
-#         titles3 = []
-#         for i in titles:
-#             titles2.append(i)
-#         for i in titles2:
-#             titles3.append(i[0])
-#         try:
-#             index = titles3.index(title)
-#         except Exception as e:
-#             logs.info(e)
-#             return None
-#         else:
-#             logs.info(f"Found {title}")
-#             return self.update(title, index, connection, cursor)
-#     @classmethod
-#     def add(self, song):
-#         connection = sql.connect("songs.db")
-#         cursor = connection.cursor()
-#         logs.info("Adding a song to the database")
-#         indexes = cursor.execute('SELECT MAX("id") FROM SONGS')
-#         indexes2 = []
-#         for i in indexes:
-#             indexes2.append(i)
-#         if indexes2[0][0] == None:
-#             indexes2 = [[-1]]
-#         logs.info(indexes2)
-#         cursor.execute("INSERT INTO SONGS VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (indexes2[0][0] + 1, song["filename"], song["title"], song["url"], song["author"], song["coverart"], float(song["dur"]), time.time(), 1, 1))
-#         logs.info("Successfully added song... closing the database")
-#         connection.commit()
-#         connection.close()
-#     @classmethod
-#     def update(self, song, index, connection: sql.Connection, cursor: sql.Cursor):
-#         timesplayed = cursor.execute('SELECT "times_played" FROM SONGS WHERE "id" = ?', [int(index)])
-#         timesplayed2 = []
-#         for i in timesplayed:
-#             timesplayed2.append(i)
-#         logs.info(timesplayed2)
-#         timesplayed = int(timesplayed2[0][0])
-#         logs.info("Updating a song in the database")
-#         logs.info(f'Updating Last Played to {time.time()}')
-#         cursor.execute('UPDATE SONGS SET "last_played" = ? WHERE "id" = ?', (int(time.time()), int(index)))
-#         logs.info(f'Updating Times PLayed to {timesplayed+1}')
-#         cursor.execute('UPDATE SONGS SET "times_played" = ? WHERE "id" =  ?', (int(timesplayed+1), int(index)))
-#         logs.info("Successfully updated song... returning the song and closing the database")
-#         record = cursor.execute('SELECT * FROM songs WHERE "id" = ?', [int(index)])
-#         record2 = []
-#         for i in record:
-#             record2.append(i)
-#         record = record2[0]
-#         cached = record[9]
-#         if cached == 0:
-#             return None
-#         else:
-#             endsong = {
-#                 "filename": record[1],
-#                 "title": record[2],
-#                 "url": record[3],
-#                 "author" : record[4],
-#                 "coverart": record[5],
-#                 "dur": record[6],
-#             }
-#             return endsong
-#     @classmethod
-#     def load(self, connection: sql.Connection, cursor: sql.Cursor):
-#         logs.info("Loading the database")
-        
+class ShowData():
+    @classmethod
+    def DB(self, action, show: dict):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS SHOWDATA ('id' int, 'name' varchar(255), 'episode' varchar(255), 'time' varchar(255))")
+        connection.commit()
+        if action == "a":
+            self.add(show)
+        elif action == "u":
+            data = cursor.execute("select name from SHOWDATA")
+            data2 = []
+            for i in data:
+                data2.append(i[0])
+            logs.info(data2)
+            index = data2.index(list(show.values())[0])
+            self.update(show, index)
+    @classmethod
+    def add(self, show):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        data = cursor.execute("select * from SHOWDATA")
+        datadecode = []
+        for i in data:
+            datadecode.append(i)
+
+        indexes = cursor.execute('SELECT MAX("id") FROM SHOWDATA')
+        indexes2 = []
+        for i in indexes:
+            indexes2.append(i)
+        if indexes2[0][0] == None:
+            indexes2 = [[-1]]
+        if not show in datadecode:
+            cursor.execute("INSERT INTO SHOWDATA VALUES(?,?,?,?)", (indexes2[0][0] + 1, show["name"], show["episode"], show["time"]))
+        connection.commit()
+        connection.close()
+
+    @classmethod
+    def update(self, show: dict, index: int):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        data = cursor.execute("select * from SHOWDATA")
+        datadecode = []
+        for i in data:
+            datadecode.append(i)
+        logs.info("Updating the show!")
+        logs.info(f"From: {datadecode[index]}")
+        logs.info(f"To: {list(show.values())}")
+        cursor.execute('UPDATE SHOWDATA SET "name" = ? WHERE "id" = ?', (show["name"], index))
+        cursor.execute('UPDATE SHOWDATA SET "episode" = ? WHERE "id" = ?', (show["episode"], index))
+        cursor.execute('UPDATE SHOWDATA SET "time" = ? WHERE "id" = ?', (show["time"], index))
+        connection.commit()
+        connection.close()
+    @classmethod
+    def load(self):
+        logs.info("Loading the database")
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        database = cursor.execute("select * from SHOWDATA")
+        returndatabase = []
+        for i in database:
+            returndatabase.append({"name":i[1], "episode":i[2], "time":i[3]})
+        connection.close()
+        return returndatabase
+
+    @classmethod
+    def remove(self, showname):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM SHOWDATA WHERE "name" = ?', (showname,))
+        connection.commit()
+        connection.close
 
 
 
+
+class UserData():
+    @classmethod
+    def DB(self, action, user: dict):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS USERDATA ('id' int, 'name' varchar(255), 'dob' varchar(255), 'colour' varchar(255))")
+        connection.commit()
+        if action == "a":
+            self.add(user)
+        elif action == "u":
+            data = cursor.execute("select name from USERDATA")
+            data2 = []
+            for i in data:
+                data2.append(i[0])
+            logs.info(data2)
+            index = data2.index(list(user.values())[0])
+            self.update(user, index)
+    @classmethod
+    def add(self, user):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        data = cursor.execute("select * from USERDATA")
+        datadecode = []
+        for i in data:
+            datadecode.append(i)
+
+        indexes = cursor.execute('SELECT MAX("id") FROM USERDATA')
+        indexes2 = []
+        for i in indexes:
+            indexes2.append(i)
+        if indexes2[0][0] == None:
+            indexes2 = [[-1]]
+        if not user in datadecode:
+            cursor.execute("INSERT INTO USERDATA VALUES(?,?,?,?)", (indexes2[0][0] + 1, user["name"], user["dob"], user["colour"]))
+        connection.commit()
+        connection.close()
+
+    @classmethod
+    def update(self, user: dict, index: int):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        data = cursor.execute("select * from USERDATA")
+        datadecode = []
+        for i in data:
+            datadecode.append(i)
+        logs.info("Updating the user!")
+        logs.info(f"From: {datadecode[index]}")
+        logs.info(f"To: {list(user.values())}")
+        cursor.execute('UPDATE USERDATA SET "name" = ? WHERE "id" = ?', (user["name"], index))
+        cursor.execute('UPDATE USERDATA SET "episode" = ? WHERE "id" = ?', (user["dob"], index))
+        cursor.execute('UPDATE USERDATA SET "time" = ? WHERE "id" = ?', (user["colour"], index))
+        connection.commit()
+        connection.close()
+    @classmethod
+    def load(self):
+        logs.info("Loading the database")
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        database = cursor.execute("select * from USERDATA")
+        returndatabase = []
+        for i in database:
+            returndatabase.append({"name":i[1], "dob":i[2], "colour":i[3]})
+        connection.close()
+        return returndatabase
+
+    # Finish 
+    @classmethod
+    def remove(self, username):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM USERDATA WHERE "name" = ?', (username,))
+        connection.commit()
+        connection.close
+    
+
+
+     

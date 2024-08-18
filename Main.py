@@ -7,6 +7,7 @@ import database as db
 import time
 import sqlite3 as sql
 import sys
+import shutil
 from colorama import init, Fore
 def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
@@ -17,14 +18,18 @@ def Purge():
     logs.warn("Killing Bot Process!")
     botprocess.kill()
     database = db.song.load()
+    logs.info("Backing up Database...")
+    shutil.copyfile("songs.db", "/Backup/songs_backup.db")
+    logs.info(f"Backedup Database to /Backup/songs_backup.db")
     logs.warn("Purging!")
     for song in database:
         if song[9] == 1:
             timesince = time.time() - song[7]
-            logs.info(f"Checking: {song[2]}\n({timesince})")
+            logs.info(f"Checking: {song[2]}\ntime since last played: ({timesince})")
             if timesince < 0:
                 logs.error(f"Last played time is in the future: {time.time() - song[7]}")
             elif timesince >= 2628000: #month in seconds
+                logs.info(f"{song["name"]} hasn't been played in a month!")
                 connection = sql.connect("songs.db")
                 cursor = connection.cursor()
                 try:
@@ -55,7 +60,7 @@ if __name__ == "__main__":
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
     logs.info(open("Version.txt", "r").read())
     botprocess.start()
-    schedule.every().day.at("23:00").do(Purge)
+    schedule.every().day.at("12:42").do(Purge)
 
 
     while True:
