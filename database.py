@@ -180,8 +180,10 @@ class ShowData():
             data = cursor.execute("select name from SHOWDATA")
             data2 = []
             for i in data:
-                data2.append(i)
-            self.update(show, data2.index(list(show.values())[0]))
+                data2.append(i[0])
+            logs.info(data2)
+            index = data2.index(list(show.values())[0])
+            self.update(show, index)
     @classmethod
     def add(self, show):
         connection = sql.connect("songs.db")
@@ -210,11 +212,12 @@ class ShowData():
         datadecode = []
         for i in data:
             datadecode.append(i)
-        
-        
-
         logs.info("Updating the show!")
-        cursor.execute("UPDATE SHOWDATA SET 'name' = ?, 'episode' = ?, 'time' = ? WHERE 'id' = ?", (show["name"], show["episode"], show["time"], index))
+        logs.info(f"From: {datadecode[index]}")
+        logs.info(f"To: {list(show.values())}")
+        cursor.execute('UPDATE SHOWDATA SET "name" = ? WHERE "id" = ?', (show["name"], index))
+        cursor.execute('UPDATE SHOWDATA SET "episode" = ? WHERE "id" = ?', (show["episode"], index))
+        cursor.execute('UPDATE SHOWDATA SET "time" = ? WHERE "id" = ?', (show["time"], index))
         connection.commit()
         connection.close()
     @classmethod
@@ -226,16 +229,93 @@ class ShowData():
         returndatabase = []
         for i in database:
             returndatabase.append({"name":i[1], "episode":i[2], "time":i[3]})
-        
-            
         connection.close()
         return returndatabase
-    
+
+    @classmethod
+    def remove(self, showname):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM SHOWDATA WHERE "name" = ?', (showname,))
+        connection.commit()
+        connection.close
+
+
+
+
+class UserData():
+    @classmethod
+    def DB(self, action, user: dict):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS USERDATA ('id' int, 'name' varchar(255), 'dob' varchar(255), 'colour' varchar(255))")
+        connection.commit()
+        if action == "a":
+            self.add(user)
+        elif action == "u":
+            data = cursor.execute("select name from USERDATA")
+            data2 = []
+            for i in data:
+                data2.append(i[0])
+            logs.info(data2)
+            index = data2.index(list(user.values())[0])
+            self.update(user, index)
+    @classmethod
+    def add(self, user):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        data = cursor.execute("select * from USERDATA")
+        datadecode = []
+        for i in data:
+            datadecode.append(i)
+
+        indexes = cursor.execute('SELECT MAX("id") FROM USERDATA')
+        indexes2 = []
+        for i in indexes:
+            indexes2.append(i)
+        if indexes2[0][0] == None:
+            indexes2 = [[-1]]
+        if not user in datadecode:
+            cursor.execute("INSERT INTO USERDATA VALUES(?,?,?,?)", (indexes2[0][0] + 1, user["name"], user["dob"], user["colour"]))
+        connection.commit()
+        connection.close()
+
+    @classmethod
+    def update(self, user: dict, index: int):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        data = cursor.execute("select * from USERDATA")
+        datadecode = []
+        for i in data:
+            datadecode.append(i)
+        logs.info("Updating the user!")
+        logs.info(f"From: {datadecode[index]}")
+        logs.info(f"To: {list(user.values())}")
+        cursor.execute('UPDATE USERDATA SET "name" = ? WHERE "id" = ?', (user["name"], index))
+        cursor.execute('UPDATE USERDATA SET "episode" = ? WHERE "id" = ?', (user["dob"], index))
+        cursor.execute('UPDATE USERDATA SET "time" = ? WHERE "id" = ?', (user["colour"], index))
+        connection.commit()
+        connection.close()
+    @classmethod
+    def load(self):
+        logs.info("Loading the database")
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        database = cursor.execute("select * from USERDATA")
+        returndatabase = []
+        for i in database:
+            returndatabase.append({"name":i[1], "dob":i[2], "colour":i[3]})
+        connection.close()
+        return returndatabase
 
     # Finish 
     @classmethod
-    def remove(self, show):
-        pass
+    def remove(self, username):
+        connection = sql.connect("songs.db")
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM USERDATA WHERE "name" = ?', (username,))
+        connection.commit()
+        connection.close
     
 
 

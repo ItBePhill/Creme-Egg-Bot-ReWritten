@@ -139,6 +139,7 @@ async def ShowsCommand(interaction: discord.Interaction):
             await ii.edit_original_response(embed = embed, view = None)
 
             message = await ii.channel.send(f"Removing... {entry['name']}")
+            db.ShowData.remove(entry["name"])
             await message.edit(content = f"Removed... {entry['name']}", embed = None, view = None)
 
         await i.response.send_message("Thinking...", ephemeral=True)
