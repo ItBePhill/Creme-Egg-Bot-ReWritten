@@ -29,7 +29,7 @@ def Purge():
             if timesince < 0:
                 logs.error(f"Last played time is in the future: {time.time() - song[7]}")
             elif timesince >= 2628000: #month in seconds
-                logs.info(f"{song["name"]} hasn't been played in a month!")
+                logs.info(f"{song['name']} hasn't been played in a month!")
                 connection = sql.connect("songs.db")
                 cursor = connection.cursor()
                 try:
