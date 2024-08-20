@@ -1,3 +1,3 @@
-import Main
+import shutil
 
-Main.Purge()
+shutil.copy("songs.db", "Backup/Songs.db")
