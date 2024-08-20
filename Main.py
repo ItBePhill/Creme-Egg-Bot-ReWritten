@@ -8,6 +8,7 @@ import time
 import sqlite3 as sql
 import sys
 import shutil
+import datetime
 from colorama import init, Fore
 def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
@@ -19,8 +20,8 @@ def Purge():
     botprocess.kill()
     database = db.song.load()
     logs.info("Backing up Database...")
-    shutil.copyfile("songs.db", "/Backup/songs_backup.db")
-    logs.info(f"Backedup Database to /Backup/songs_backup.db")
+    shutil.copyfile("songs.db", f"Backup/songs_backup_{datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.db")
+    logs.info(f"Backed-up Database to Backup/songs_backup_{datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.db")
     logs.warn("Purging!")
     for song in database:
         if song[9] == 1:
