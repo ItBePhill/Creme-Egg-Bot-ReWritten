@@ -102,10 +102,10 @@ if CremeModules.MovieModule.enabled == True:
 
 
 if CremeModules.MusicModule.enabled == True:
-  @client.tree.command(name = "play", description="Play a Song", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "play", description="Play a video", guild = discord.Object(id=1014812996226256927))
   @app_commands.describe(
-      query = "The song you want to play",
-      starttime = "The time to start the song at in seconds P.S. (by default will be set to 0)",
+      query = "The video you want to play",
+      starttime = "The time to start the video at in seconds P.S. (by default will be set to 0)",
   )
   async def PlayCommand(interaction: discord.Interaction, query: str, starttime: float|None):
     if starttime == None:
@@ -116,7 +116,7 @@ if CremeModules.MusicModule.enabled == True:
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.QueueCommand(interaction)
   
-  @client.tree.command(name = "creme_egg_wrapper", description="Show a list of the most listened to songs", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "creme_egg_wrapper", description="Show a list of the most listened to videos", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.WrappedCommand(interaction)
   
@@ -154,30 +154,30 @@ if CremeModules.MusicModule.enabled == True:
   async def ShuffleCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.ShuffleCommand(interaction)
   
-  @client.tree.command(name = "remove", description="Remove a Song from the Queue", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "remove", description="Remove a video from the Queue", guild = discord.Object(id=1014812996226256927))
   @app_commands.describe(
-      index="The position of the song you wan to remove",
+      index="The position of the video you wan to remove",
   )
   async def RemoveCommand(interaction: discord.Interaction, index: int):
     await CremeModules.MusicModule.RemoveCommand(interaction, index)
 
-  @client.tree.command(name = "pause", description="Pause the Current Song", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "pause", description="Pause the Current video", guild = discord.Object(id=1014812996226256927))
   async def PauseCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.PauseCommand(interaction)
   
-  @client.tree.command(name = "resume", description="Resume the Current Song", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "resume", description="Resume the Current video", guild = discord.Object(id=1014812996226256927))
   async def ResumeCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.ResumeCommand(interaction)
 
-  @client.tree.command(name = "skip", description="Skip the Current Song", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "skip", description="Skip the Current video", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.SkipCommand(interaction, client)
   
-  @client.tree.command(name = "stop", description="Stop the Current Song and Clear the Queue", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "stop", description="Stop the Current video and Clear the Queue", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.StopCommand(interaction)
   
-  @client.tree.command(name = "restart", description="Restart the Current Song", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "restart", description="Restart the Current video", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.RestartCommand(interaction, client)
 
@@ -189,13 +189,13 @@ if CremeModules.MusicModule.enabled == True:
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.JoinCommand(interaction)
   
-  @client.tree.command(name = "now_playing", description="Show Information on the Currently Playing Song", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "now_playing", description="Show Information on the Currently Playing video", guild = discord.Object(id=1014812996226256927))
   async def QueueCommand(interaction: discord.Interaction):
     await CremeModules.MusicModule.NowPlayingCommand(interaction, client)
   
-  @client.tree.command(name = "info", description="Info from a song in the queue", guild = discord.Object(id=1014812996226256927))
+  @client.tree.command(name = "info", description="Info from a video in the queue", guild = discord.Object(id=1014812996226256927))
   @app_commands.describe(
-      index="The Position of the song you want the information for",
+      index="The Position of the video you want the information for",
   )
   async def InfoCommand(interaction: discord.Interaction, index: int):
     await CremeModules.MusicModule.InfoCommand(interaction, index)

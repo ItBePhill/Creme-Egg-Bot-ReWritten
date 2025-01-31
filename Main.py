@@ -14,7 +14,6 @@ def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
     runbot(process)
 # purge unlistened-to songs from the songs folder
-#unfinished
 def Purge():
     logs.warn("Killing Bot Process!")
     botprocess.kill()
@@ -61,11 +60,11 @@ if __name__ == "__main__":
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
     logs.info(open("Version.txt", "r").read())
     botprocess.start()
-    schedule.every().day.at("12:42").do(Purge)
+    # schedule.every().day.at("12:42").do(Purge)
 
 
     while True:
-        schedule.run_pending()
+        # schedule.run_pending()
         time.sleep(1)
         continue
 

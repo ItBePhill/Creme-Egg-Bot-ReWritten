@@ -9,7 +9,7 @@ def running():
     return True
 
 async def UpdateCounters(guild: discord.Guild):
-    await guild.create_voice_channel()
+    pass
 
 
 

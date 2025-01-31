@@ -248,7 +248,7 @@ class UserData():
     def DB(self, action, user: dict):
         connection = sql.connect("songs.db")
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS USERDATA ('id' int, 'name' varchar(255), 'dob' varchar(255), 'colour' varchar(255))")
+        cursor.execute("CREATE TABLE IF NOT EXISTS USERDATA ('id' int, 'name' varchar(255), 'dob' varchar(255), 'colour' varchar(255), 'xp' varchar(255), 'level' varchar(255))")
         connection.commit()
         if action == "a":
             self.add(user)
@@ -276,7 +276,7 @@ class UserData():
         if indexes2[0][0] == None:
             indexes2 = [[-1]]
         if not user in datadecode:
-            cursor.execute("INSERT INTO USERDATA VALUES(?,?,?,?)", (indexes2[0][0] + 1, user["name"], user["dob"], user["colour"]))
+            cursor.execute("INSERT INTO USERDATA VALUES(?,?,?,?,?,?)", (indexes2[0][0] + 1, user["name"], user["dob"], user["colour"], user["xp"], user[""]))
         connection.commit()
         connection.close()
 
@@ -292,8 +292,8 @@ class UserData():
         logs.info(f"From: {datadecode[index]}")
         logs.info(f"To: {list(user.values())}")
         cursor.execute('UPDATE USERDATA SET "name" = ? WHERE "id" = ?', (user["name"], index))
-        cursor.execute('UPDATE USERDATA SET "episode" = ? WHERE "id" = ?', (user["dob"], index))
-        cursor.execute('UPDATE USERDATA SET "time" = ? WHERE "id" = ?', (user["colour"], index))
+        cursor.execute('UPDATE USERDATA SET "dob" = ? WHERE "id" = ?', (user["dob"], index))
+        cursor.execute('UPDATE USERDATA SET "colour" = ? WHERE "id" = ?', (user["colour"], index))
         connection.commit()
         connection.close()
     @classmethod
