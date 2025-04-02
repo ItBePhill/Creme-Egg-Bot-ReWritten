@@ -308,6 +308,7 @@ ytdl_format_options = {
     'source_address': '0.0.0.0',
     'concurrent-fragments': 1,
     'paths': {'home': f"{os.getcwd()}//Songs"},
+    'cookiefile': f"{os.getcwd()}//cookies.txt",
 }   
 ytdl_format_options_no_down = {
     'format': 'bestaudio/best',
@@ -322,6 +323,7 @@ ytdl_format_options_no_down = {
     # bind to ipv4 since ipv6 addresses cause issues sometimes
     'source_address': '0.0.0.0',
     'skip-download' : True,
+    'cookiefile': f"{os.getcwd()}//cookies.txt",
 }
 ytdl_playlist_format_options = {
     'format': 'bestaudio/best',
@@ -340,6 +342,7 @@ ytdl_playlist_format_options = {
     'paths': {'home': f"{os.getcwd()}//Songs"},
     'skip-download' : True,
     'extract_flat': True,
+    'cookiefile': f"{os.getcwd()}//cookies.txt",
 }   
 
 ffmpeg_options = {

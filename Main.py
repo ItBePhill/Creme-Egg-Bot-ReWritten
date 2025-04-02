@@ -14,13 +14,14 @@ def StartBot(process):
     from Creme_Egg_Bot_ReWritten import runbot
     runbot(process)
 # purge unlistened-to songs from the songs folder
+#unfinished
 def Purge():
     logs.warn("Killing Bot Process!")
     botprocess.kill()
     database = db.song.load()
     logs.info("Backing up Database...")
-    shutil.copyfile("songs.db", f"Backup/songs_backup_{datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.db")
-    logs.info(f"Backed-up Database to Backup/songs_backup_{datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.db")
+    shutil.copyfile("songs.db", f"./Backup/songs_backup.db")
+    logs.info(f"Backed-up Database to Backup/songs_backup_{datetime.datetime.today().strftime('%Y-%m-%d')}.db")
     logs.warn("Purging!")
     for song in database:
         if song[9] == 1:
@@ -29,7 +30,7 @@ def Purge():
             if timesince < 0:
                 logs.error(f"Last played time is in the future: {time.time() - song[7]}")
             elif timesince >= 2628000: #month in seconds
-                logs.info(f"{song['name']} hasn't been played in a month!")
+                logs.info(f"{song[2]} hasn't been played in a month!")
                 connection = sql.connect("songs.db")
                 cursor = connection.cursor()
                 try:
@@ -39,7 +40,11 @@ def Purge():
                     connection.close()             
                 except Exception as e:
                     logs.error(e)
-                os.remove(song[1])
+                try:
+                    logs.warn(f"Deleting: {song[2]}")
+                    os.remove(song[2])
+                except Exception as e:
+                    logs.warn(e)
     logs.warn("Restarting Main.py")
     os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
                 
@@ -59,12 +64,16 @@ if __name__ == "__main__":
     """)
     logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
     logs.info(open("Version.txt", "r").read())
+    if not os.path.exists("./Backup"):
+        os.makedir("./Backup")
+    logs.info("Starting Bot Process...")
     botprocess.start()
-    # schedule.every().day.at("12:42").do(Purge)
+    logs.info("Starting Purge Scheduler...")
+    schedule.every().day.at("23:00").do(Purge)
 
 
     while True:
-        # schedule.run_pending()
+        schedule.run_pending()
         time.sleep(1)
         continue
 
