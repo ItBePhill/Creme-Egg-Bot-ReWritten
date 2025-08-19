@@ -392,7 +392,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 #Set Timelapsed Variable
 g.variables["timelapsed"] = 0
-
 #Player Class
 class Player():
     #player - plays the music and cycles through the queue
@@ -532,19 +531,53 @@ class Player():
 #/Player and Related
 #Commands
 
+"""video = {
+                "filename": file,
+                "title": data["title"],
+                "url": f'https://www.youtube.com/watch?v={data["id"]}',
+                "author" : data['channel'],
+                "coverart": "",
+                "channelart": "",
+                "user": interaction.user,
+                "dur": data['duration'],
+                "id": len(Pl.queue),
+                "userfile": False,
+                "starttime": starttime,
+            }
+            # get thumbnail
+            try:
+                video["coverart"] = data["thumbnail"]
+            except:
+                video["coverart"] = genericthumburl
+            # try:
+            #     video["channelart"] = data[""]
+            # except:
+            #     video["channelart"] = genericthumburl
+            db.song.add(video)
+        # video is cached
+        else:
+            await interaction.edit_original_response(content =  "Found the video, using cached video")
+            # set video variable to saved values
+            video = {
+                "filename": result['filename'],
+                "title": result["title"],
+                "url": result['url'],
+                "author" : result['author'],
+                "coverart": result['coverart'],
+                "user": interaction.user,
+                "dur": result['dur'],
+                "id": len(Pl.queue),
+                "userfile": False,
+                "starttime": starttime,
+            }"""
+
+
+
 #PlayCommand - Takes a Query, and plays it on discord
 async def PlayCommand(interaction: discord.Interaction, query: str, starttime:str|None, client: discord.Client):
     #Prepare for downloading a playlist or a video
     async def DownPrep(interaction: discord.Interaction, url: str):
-        if __name__ == '__main__':
-            queriesraw = YTDLSource.from_url_without_download_playlist(url)
-            import itertools as it
-            queries = it.batched(queriesraw, int(len(queriesraw) / len(queriesraw)))
-            queries = list(map(list, queries))
-            with mt.Pool() as p:
-                return list(p.map(func=Down,iterable=queries))
-    #Download each video in the queries list
-    async def Down(interaction: discord.Interaction, query: list):
+        pass
         print(query)
         return query
     #youtube - download a youtube link and return the filename
@@ -578,87 +611,27 @@ async def PlayCommand(interaction: discord.Interaction, query: str, starttime:st
         ytlink = f"{track['name']} by {artists}"
         logs.info(ytlink)
         return [ytlink]
-    
-
     logs.info(f"Play command was called! by: {interaction.user}, with Query: {query}")
     await interaction.response.send_message(f"Thinking...")
-
     # connect to the vc the user is in.
     if client.voice_clients == []:
          # connect to the channel the user is in
         channel = interaction.user.voice.channel
         await interaction.edit_original_response(content="Joining the voice channel..")
         await channel.connect(self_deaf=True)
-    # check if the link is from spotify
-    if "open.spotify" in query:
-            file = None
-            files = await spotify(interaction, query)
-            file = files[0]
-            query = file
-    await interaction.edit_original_response(content=f"Searching for the video on Youtube...")
-    # check if quiry is a playlist
-    if "playlist?list" in query:
-        logs.info("playlist")
+
+    #first we check if the link is a playlist link or a video link
+    if(query.contains("playlist?list=")):
+        #this is a playlist
+        await interaction.edit_original_response(content="Playlist detected!")
+        #get the playlist id from the url
+        playlist_id = query.split("list=")[1]
+        #get the playlist info from youtube
         
-    # not a playlist and found spotify on youtube
-    else:
-        # get the info on the video
-        print(type(Pl.queue))
-        data = await get_info(query)
-        await interaction.edit_original_response(content=f"Found! {data['title']} by {data['channel']}")
-        # check if video is cached 
-        result = db.song.DB(data["title"])
-        # video is not cached
-        if result == None:
-            await interaction.edit_original_response(content = "video not cached, Downloading the video...")
-            # download the video
-            files = await youtube(interaction, [query])
-            file = files[0]
-            # set video variable using data from get_info from above and file info from downloading
-            video = {
-                "filename": file,
-                "title": data["title"],
-                "url": f'https://www.youtube.com/watch?v={data["id"]}',
-                "author" : data['channel'],
-                "coverart": "",
-                "channelart": "",
-                "user": interaction.user,
-                "dur": data['duration'],
-                "id": len(Pl.queue),
-                "userfile": False,
-                "starttime": starttime,
-            }
-            # get thumbnail
-            try:
-                video["coverart"] = data["thumbnail"]
-            except:
-                video["coverart"] = genericthumburl
-            # try:
-            #     video["channelart"] = data[""]
-            # except:
-            #     video["channelart"] = genericthumburl
-            db.song.add(video)
-        # video is cached
-        else:
-            await interaction.edit_original_response(content =  "Found the video, using cached video")
-           # set video variable to saved values
-            video = {
-                "filename": result['filename'],
-                "title": result["title"],
-                "url": result['url'],
-                "author" : result['author'],
-                "coverart": result['coverart'],
-                "user": interaction.user,
-                "dur": result['dur'],
-                "id": len(Pl.queue),
-                "userfile": False,
-                "starttime": starttime,
-            }
-        # add the video to the queue
-        await interaction.edit_original_response(content = "Adding the video to the queue...")
-        await interaction.delete_original_response()
-        Pl.queue.append(video)
-        await Pl.player(interaction, client)
+
+
+
+
 
 queuepage = 0
 #QueueCommand - Get and show the queue, in a nice format

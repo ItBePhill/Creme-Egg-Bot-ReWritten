@@ -62,7 +62,8 @@ if __name__ == "__main__":
    \___|_| \___|_|_|_\___| |___\__, \__, | |___/\___/\__| |_|_\___|\_/\_/|_| |_|\__|\__\___|_||_|  
                                 |___/|___/                                                         
     """)
-    logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()}") 
+    logs.info(Fore.WHITE+f"\nCPU Threads: {multiprocessing.cpu_count()}" ) 
+    logs.info(Fore.WHITE+f"\nCPU Cores: {multiprocessing.cpu_count()/2 } Threads / 2 (rough estimate)" ) 
     logs.info(open("Version.txt", "r").read())
     if not os.path.exists("./Backup"):
         os.makedir("./Backup")

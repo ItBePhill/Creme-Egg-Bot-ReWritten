@@ -1,0 +1,6 @@
+services:
+  cremeeggbotrewritten:
+    image: cremeeggbotrewritten
+    build:
+      context: .
+      dockerfile: ./Dockerfile
